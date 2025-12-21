@@ -2,9 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印ジェネレーター（KouzanBrushFont）</title>
+<title>御朱印ジェネレーター（黒文字・拡大）</title>
 <style>
-  /* アップロード済みフォントを読み込む */
   @font-face {
     font-family: 'KouzanBrush';
     src: url('./KouzanBrushFont.woff2') format('woff2');
@@ -30,7 +29,7 @@
 </head>
 <body>
 
-<h1>御朱印ジェネレーター（KouzanBrush）</h1>
+<h1>御朱印ジェネレーター（黒文字・拡大）</h1>
 <canvas id="goshuinCanvas"></canvas><br>
 <button id="generateBtn">御朱印生成</button>
 <button id="downloadBtn">ダウンロード（WebP）</button>
@@ -57,15 +56,10 @@ function getJapaneseDate(date) {
   return `${era}${yearStr}年${monthStr}${dayStr}`;
 }
 
-// 縦書き描画（左中央・強調）
+// 縦書き描画（黒文字・左中央）
 function drawVerticalText(ctx, text, x, y, lineHeight) {
   for(let i=0; i<text.length; i++){
-    // 影で立体感
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillText(text[i], x + 1, y + i * lineHeight + 1);
-
-    // メイン色
-    ctx.fillStyle = "#cc0000";
+    ctx.fillStyle = "#000000"; // 黒色
     ctx.fillText(text[i], x, y + i * lineHeight);
   }
 }
@@ -84,12 +78,12 @@ function generateGoshuin() {
     const now = new Date();
     const dateStr = getJapaneseDate(now);
 
-    const fontSize = Math.floor(canvas.width / 16); // 少し大きめ
+    const fontSize = Math.floor(canvas.width / 16 * 1.5); // 現在比150%
     ctx.font = fontSize + "px 'KouzanBrush', serif";
     ctx.textAlign = "center";
 
     const lineHeight = fontSize * 1.2;
-    const x = fontSize * 1.2; // 左側に少し内側
+    const x = fontSize * 1.2;
     const y = (canvas.height - lineHeight * dateStr.length) / 2;
 
     drawVerticalText(ctx, dateStr, x, y, lineHeight);
