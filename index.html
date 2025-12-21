@@ -2,10 +2,10 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印ジェネレーター（WebP版）</title>
+<title>御朱印ジェネレーター（WebP版・和暦縦書き）</title>
 <style>
   body {
-    font-family: sans-serif;
+    font-family: "Yu Mincho", "MS PMincho", serif;
     text-align: center;
     margin-top: 50px;
   }
@@ -22,8 +22,8 @@
 </head>
 <body>
 
-<h1>御朱印ジェネレーター（WebP版）</h1>
-<canvas id="goshuinCanvas" width="500" height="500"></canvas><br>
+<h1>御朱印ジェネレーター（和暦縦書き）</h1>
+<canvas id="goshuinCanvas"></canvas><br>
 <button id="generateBtn">御朱印生成</button>
 <button id="downloadBtn">ダウンロード（WebP）</button>
 
@@ -36,25 +36,55 @@ const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
+// 和暦変換関数（令和のみ対応）
+function getJapaneseDate(date) {
+  const era = "令和";
+  const year = date.getFullYear() - 2018; // 令和元年 = 2019
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  // 漢数字
+  const kanji = ["〇","一","二","三","四","五","六","七","八","九"];
+  const numToKanji = n => n < 10 ? kanji[n] : (n < 20 ? "十" + (n%10===0?"":kanji[n%10]) : "");
+  const yearStr = Array.from(String(year)).map(d => kanji[+d]).join(""); // 西暦和暦年は漢数字化
+  const monthStr = (month<=10?kanji[month]: "十" + (month-10>0?kanji[month-10]:"")) + "月";
+  const dayStr = (day<=10?kanji[day]: day<20? "十" + (day-10>0?kanji[day-10]:""): day<30? "二十" + (day-20>0?kanji[day-20]:""):"三十") + "日";
+
+  return `${era}${yearStr}年${monthStr}${dayStr}`;
+}
+
+// 縦書き描画
+function drawVerticalText(ctx, text, x, y, lineHeight) {
+  for(let i=0; i<text.length; i++){
+    ctx.fillText(text[i], x, y + i * lineHeight);
+  }
+}
+
 function generateGoshuin() {
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = templateUrl;
   img.onload = () => {
+    // Canvasを画像サイズに合わせる
+    canvas.width = img.width;
+    canvas.height = img.height;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // 日付描画
+    // 日付描画（右下）
     const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = ("0" + (now.getMonth() + 1)).slice(-2);
-    const dd = ("0" + now.getDate()).slice(-2);
-    const dateStr = `${yyyy}年${mm}月${dd}日`;
+    const dateStr = getJapaneseDate(now);
 
-    ctx.font = "24px serif";
+    ctx.font = Math.floor(canvas.width / 20) + "px 'Yu Mincho', serif";
     ctx.fillStyle = "red";
-    ctx.textAlign = "right";
-    ctx.fillText(dateStr, canvas.width - 20, canvas.height - 20);
+    ctx.textAlign = "center";
+
+    // 右下から縦書き
+    const x = canvas.width - 40; 
+    const y = 40; // 上からスタート（縦書きは上方向に伸びる）
+    const lineHeight = Math.floor(canvas.width / 20);
+    drawVerticalText(ctx, dateStr, x, y, lineHeight);
   };
 }
 
