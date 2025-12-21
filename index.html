@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印ジェネレーター</title>
+<title>御朱印ジェネレーター（WebP版）</title>
 <style>
   body {
     font-family: sans-serif;
@@ -22,14 +22,14 @@
 </head>
 <body>
 
-<h1>御朱印ジェネレーター</h1>
+<h1>御朱印ジェネレーター（WebP版）</h1>
 <canvas id="goshuinCanvas" width="500" height="500"></canvas><br>
 <button id="generateBtn">御朱印生成</button>
-<button id="downloadBtn">ダウンロード</button>
+<button id="downloadBtn">ダウンロード（WebP）</button>
 
 <script>
-// テンプレート画像 URL
-const templateUrl = "goshuin_template.png"; // 自分の画像に置き換え
+// 御朱印テンプレート画像
+const templateUrl = "KamiyashiroGoshuin.webp";
 
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
@@ -38,10 +38,9 @@ const downloadBtn = document.getElementById("downloadBtn");
 
 function generateGoshuin() {
   const img = new Image();
-  img.crossOrigin = "anonymous"; // 必要に応じて
+  img.crossOrigin = "anonymous";
   img.src = templateUrl;
   img.onload = () => {
-    // キャンバスに御朱印画像描画
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -59,11 +58,11 @@ function generateGoshuin() {
   };
 }
 
-// ダウンロード機能
+// ダウンロード（WebP）
 function downloadGoshuin() {
   const link = document.createElement("a");
-  link.download = "goshuin.png";
-  link.href = canvas.toDataURL("image/png");
+  link.download = "KamiyashiroGoshuin.webp";
+  link.href = canvas.toDataURL("image/webp");
   link.click();
 }
 
