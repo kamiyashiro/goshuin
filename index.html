@@ -2,11 +2,18 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印ジェネレーター（強調版）</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+<title>御朱印ジェネレーター（KouzanBrushFont）</title>
 <style>
+  /* アップロード済みフォントを読み込む */
+  @font-face {
+    font-family: 'KouzanBrush';
+    src: url('./KouzanBrushFont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+
   body {
-    font-family: 'Noto Serif JP', serif;
+    font-family: 'KouzanBrush', serif;
     text-align: center;
     margin-top: 50px;
   }
@@ -23,14 +30,13 @@
 </head>
 <body>
 
-<h1>御朱印ジェネレーター（強調版・縦書き）</h1>
+<h1>御朱印ジェネレーター（KouzanBrush）</h1>
 <canvas id="goshuinCanvas"></canvas><br>
 <button id="generateBtn">御朱印生成</button>
 <button id="downloadBtn">ダウンロード（WebP）</button>
 
 <script>
 const templateUrl = "KamiyashiroGoshuin.webp";
-
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
@@ -54,12 +60,12 @@ function getJapaneseDate(date) {
 // 縦書き描画（左中央・強調）
 function drawVerticalText(ctx, text, x, y, lineHeight) {
   for(let i=0; i<text.length; i++){
-    // 軽く影を付けて朱印っぽく
+    // 影で立体感
     ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.fillText(text[i], x + 1, y + i * lineHeight + 1);
 
     // メイン色
-    ctx.fillStyle = "#cc0000"; // 濃い赤
+    ctx.fillStyle = "#cc0000";
     ctx.fillText(text[i], x, y + i * lineHeight);
   }
 }
@@ -79,11 +85,11 @@ function generateGoshuin() {
     const dateStr = getJapaneseDate(now);
 
     const fontSize = Math.floor(canvas.width / 16); // 少し大きめ
-    ctx.font = fontSize + "px 'Noto Serif JP', serif";
+    ctx.font = fontSize + "px 'KouzanBrush', serif";
     ctx.textAlign = "center";
 
-    const lineHeight = fontSize * 1.2; // 行間を少し広めに
-    const x = fontSize * 1.2; // 左から少し内側
+    const lineHeight = fontSize * 1.2;
+    const x = fontSize * 1.2; // 左側に少し内側
     const y = (canvas.height - lineHeight * dateStr.length) / 2;
 
     drawVerticalText(ctx, dateStr, x, y, lineHeight);
