@@ -10,12 +10,12 @@
   src: url('./KouzanBrushFont.woff2') format('woff2');
 }
 
-/* ページ全体背景 */
+/* ページ全体背景：幅合わせ */
 body {
   margin: 0;
   min-height: 100vh;
-  background: url('./Iwakura.webp') no-repeat center center fixed;
-  background-size: contain;
+  background: url('./KamiyashiroGoshuin.webp') no-repeat top center;
+  background-size: 100vw auto;   /* ★ ウィンドウ幅合わせ */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,9 +32,9 @@ body {
 
 /* 御朱印生成窓 */
 canvas {
-  width: 600px;        /* 表示サイズ */
+  width: 600px;       /* 表示サイズ固定 */
   height: 900px;
-  background: #fff;    /* 透け防止 */
+  background: #fff;   /* 透け防止 */
   border: 2px solid #333;
   display: block;
   margin: 0 auto;
@@ -65,7 +65,7 @@ button {
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
 
-/* 描画解像度（重要） */
+/* 描画解像度（巨大化防止） */
 canvas.width  = 1200;
 canvas.height = 1800;
 
