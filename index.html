@@ -1,20 +1,107 @@
-function generate() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>御朱印生成</title>
 
-  const dateStr = getJapaneseDate(new Date());
-  const size = Math.floor(canvas.width / 16 * 1.5);
-  const lineHeight = size * 1.2;
-
-  ctx.font = size + "px 'KouzanBrush'";
-  ctx.fillStyle = "#000";
-  ctx.textAlign = "center";
-
-  // 必要高さを計算
-  const neededHeight = lineHeight * dateStr.length + size;
-
-  // 描画開始Y（左下詰め・でも下からはみ出さない）
-  const y = canvas.height - neededHeight;
-  const x = size * 1.1;
-
-  drawVertical(dateStr, x, y, size);
+<style>
+/* ===== 全体背景 ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
+
+body {
+  background: url("Iwakura.webp") no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: serif;
+}
+
+/* ===== メインUI ===== */
+#app {
+  background: rgba(255,255,255,0.9);
+  padding: 16px;
+  border-radius: 8px;
+  max-width: 90vw;
+}
+
+/* ===== 御朱印表示エリア ===== */
+#goshuin-area {
+  position: relative;
+  width: min(80vw, 600px);   /* 最大でも画面内 */
+  aspect-ratio: 3 / 4;      /* 御朱印比率 */
+}
+
+/* 御朱印台紙 */
+#goshuin-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 文字レイヤー */
+.goshuin-text {
+  position: absolute;
+  writing-mode: vertical-rl;
+  font-size: 24px;
+  color: #000;
+  white-space: nowrap;
+}
+
+/* 日付 */
+#date {
+  bottom: 8%;
+  left: 10%;
+  font-size: 18px;
+}
+
+/* ===== 操作ボタン ===== */
+#controls {
+  margin-top: 12px;
+  text-align: center;
+}
+
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+  <div id="goshuin-area">
+    <img id="goshuin-bg" src="KamiyashiroGoshuin.webp" alt="御朱印">
+
+    <div class="goshuin-text" style="top:10%; right:20%;">神社名</div>
+    <div class="goshuin-text" id="date"></div>
+  </div>
+
+  <div id="controls">
+    <button onclick="updateDate()">日付更新</button>
+  </div>
+
+</div>
+
+<script>
+function updateDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  document.getElementById("date").textContent =
+    `${y}年${m}月${day}日`;
+}
+
+updateDate();
+</script>
+
+</body>
+</html>
