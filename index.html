@@ -18,36 +18,37 @@ body {
   font-family: sans-serif;
 }
 
-/* ページ上部のタイトル（全体を75%サイズに） */
-.header-title {
+/* ページ上部のタイトル（和文） */
+.header-title-ja {
   font-size: 36px; /* 48pxの75% */
-  font-weight: bold;
   font-family: 'KouzanBrush', sans-serif;
+  font-weight: bold;
   color: #d40000; /* 朱色 */
-  -webkit-text-stroke: 1.5px white;
+  -webkit-text-stroke: 1.5px white; /* 細い白縁取り */
   text-stroke: 1.5px white;
   text-shadow: 
     2px 2px 0 white, -2px -2px 0 white,
     2px -2px 0 white, -2px 2px 0 white,
     0 2px 0 white, 0 -2px 0 white,
     2px 0 0 white, -2px 0 0 white;
-  margin-bottom: 30px;
+  margin-bottom: 8px;
   letter-spacing: 4px;
 }
 
+/* ページ上部のタイトル（英文） */
 .header-title-en {
   display: block;
   font-size: 24px; /* 32pxの75% */
-  color: #d40000;
   font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
-  margin-top: 10px;
-  -webkit-text-stroke: 1px white;
+  color: #d40000; /* 朱色 */
+  -webkit-text-stroke: 1px white; /* より細い白縁取り */
   text-stroke: 1px white;
   text-shadow: 
     1.5px 1.5px 0 white, -1.5px -1.5px 0 white,
     1.5px -1.5px 0 white, -1.5px 1.5px 0 white,
     0 1.5px 0 white, 0 -1.5px 0 white,
     1.5px 0 0 white, -1.5px 0 0 white;
+  letter-spacing: 2px;
 }
 
 #wrap {
@@ -55,6 +56,7 @@ body {
   position: relative;
 }
 
+/* ボタンエリア：常に最前面 */
 .controls {
   position: absolute;
   top: 8px;
@@ -91,10 +93,10 @@ canvas {
 </head>
 <body>
 
-<!-- ページ上部のタイトル（75%サイズ） -->
-<div class="header-title">
-  御朱印授与所
-  <span class="header-title-en">Goshuin Granting Office</span>
+<!-- ページ上部のタイトル -->
+<div>
+  <div class="header-title-ja">御朱印授与所</div>
+  <div class="header-title-en">Goshuin Granting Office</div>
 </div>
 
 <div id="wrap">
@@ -113,47 +115,47 @@ const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
-/* 初期表示（案内文字も75%サイズに） */
+/* 初期表示 */
 canvas.width = 420;
 canvas.height = 300;
 ctx.fillStyle = "#ffffff";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+// 外枠
 ctx.strokeStyle = "#333";
 ctx.lineWidth = 3;
 ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-// 和文案内（MS Gothic、サイズ75% ≈23px）
-ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
+// 案内文字（和文） - サイズ75% → 30px → 約23px
+ctx.font = "23px 'KouzanBrush'";
 ctx.fillStyle = "#000";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 15);
+ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 20);
 
-// 英文案内
-ctx.font = "18px sans-serif";
-ctx.fillStyle = "#444";
+// 英文案内は削除（指示にないため和文のみに統一）
+ctx.font = "18px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
+ctx.fillStyle = "#000";
 ctx.fillText("Goshuin will be displayed here", canvas.width/2, canvas.height/2 + 20);
 
 function getJapaneseDate(date) {
   const kan = ["〇","一","二","三","四","五","六","七","八","九"];
-  const y = date.getFullYear() - 2018;
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-
+  const y = date.getFullYear() - 2018; // 令和（2019開始）
   let yearStr = "令和";
   if (y === 1) yearStr += "元";
   else yearStr += String(y).split("").map(n => kan[n]).join("");
   yearStr += "年";
 
+  const m = date.getMonth() + 1;
   let monthStr = m <= 10 ? kan[m] : "十" + (m-10 === 0 ? "" : kan[m-10]);
   monthStr += "月";
 
+  const d = date.getDate();
   let dayStr;
   if (d <= 10) dayStr = kan[d];
   else if (d < 20) dayStr = "十" + (d-10 === 0 ? "" : kan[d-10]);
-  else if (d < 30) dayStr = "二十" + kan[d-20];
-  else dayStr = "三十" + kan[d-30];
+  else if (d < 30) dayStr = "二十" + (d-20 === 0 ? "" : kan[d-20]);
+  else dayStr = "三十" + (d-30 === 0 ? "" : kan[d-30]);
   dayStr += "日";
 
   return yearStr + monthStr + dayStr;
