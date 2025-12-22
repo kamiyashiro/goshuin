@@ -18,32 +18,22 @@ body {
   font-family: sans-serif;
 }
 
-/* 和文タイトル：縁取り極細（文字の約1/9） */
+/* 和文タイトル：縁取りなし */
 .header-title-ja {
   font-size: 36px;
   font-family: 'KouzanBrush', sans-serif;
   font-weight: bold;
   color: #d40000; /* 朱色 */
-  -webkit-text-stroke: 0.4px white; /* 極細白縁取り */
-  text-stroke: 0.4px white;
-  text-shadow: 
-    0.5px 0.5px 0 white, -0.5px -0.5px 0 white,
-    0.5px -0.5px 0 white, -0.5px 0.5px 0 white;
   margin-bottom: 8px;
   letter-spacing: 4px;
 }
 
-/* 英文タイトル：縁取りさらに細く */
+/* 英文タイトル：縁取りなし */
 .header-title-en {
   display: block;
   font-size: 24px;
   font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
   color: #d40000; /* 朱色 */
-  -webkit-text-stroke: 0.3px white; /* 極めて細い白縁取り */
-  text-stroke: 0.3px white;
-  text-shadow: 
-    0.4px 0.4px 0 white, -0.4px -0.4px 0 white,
-    0.4px -0.4px 0 white, -0.4px 0.4px 0 white;
   letter-spacing: 2px;
 }
 
@@ -88,7 +78,7 @@ canvas {
 </head>
 <body>
 
-<!-- タイトル（朱色文字＋極細白縁取り） -->
+<!-- タイトル（朱色文字・縁取りなし） -->
 <div>
   <div class="header-title-ja">御朱印授与所</div>
   <div class="header-title-en">Goshuin Granting Office</div>
