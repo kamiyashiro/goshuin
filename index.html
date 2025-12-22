@@ -17,15 +17,16 @@ body {
   text-align: center;
 }
 
-/* 共通英語フォント（筆文字禁止） */
+/* 英文専用（筆文字禁止） */
 .en {
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
-               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+               "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* 見出し */
+/* ===== ヘッダー ===== */
 .header {
-  margin-top: 30px;
+  margin-top: 20px;
+  pointer-events: none;
 }
 
 .header .jp {
@@ -47,34 +48,21 @@ body {
   color: #333;
 }
 
-/* 説明文 */
-.notice {
-  margin: 30px 0 10px;
-}
-
-.notice .jp {
-  font-family: "KouzanBrush";
-  font-size: 24px;
-}
-
-.notice .en {
-  display: block;
-  font-size: 14px;
-  color: #444;
-  margin-top: 4px;
-}
-
-/* ボタン */
-button {
-  margin: 20px 10px;
-  padding: 14px 28px;
-  font-size: 20px;
-  cursor: pointer;
-  background: #ffffff;
-  border: 2px solid #333;
-  border-radius: 6px;
+/* ===== ボタン ===== */
+.controls {
+  margin: 20px 0;
   position: relative;
   z-index: 10;
+}
+
+button {
+  margin: 0 10px;
+  padding: 12px 26px;
+  font-size: 20px;
+  background: #fff;
+  border: 2px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 button .jp {
@@ -84,7 +72,32 @@ button .jp {
 button .en {
   display: block;
   font-size: 12px;
-  color: #333;
+}
+
+/* ===== 御朱印表示枠（基準） ===== */
+.goshuin-area {
+  width: 90%;
+  max-width: 900px;
+  height: 600px;           /* ← ここが超重要：基準サイズ */
+  margin: 20px auto 40px;
+  border: 2px dashed #999;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 初期メッセージ */
+.placeholder .jp {
+  font-family: "KouzanBrush";
+  font-size: 28px;
+}
+
+.placeholder .en {
+  display: block;
+  font-size: 14px;
+  margin-top: 6px;
+  color: #444;
 }
 </style>
 </head>
@@ -96,30 +109,31 @@ button .en {
   <span class="en">Goshuin Issuance Desk</span>
 </div>
 
-<div class="notice">
-  <span class="jp">御朱印は此処に教授（表示）されます</span>
-  <span class="en">Your Goshuin will be displayed here</span>
-</div>
-
-<div>
+<div class="controls">
   <button id="showBtn">
     <span class="jp">表示</span>
     <span class="en">Show</span>
   </button>
-
   <button id="saveBtn">
     <span class="jp">保存</span>
     <span class="en">Save</span>
   </button>
 </div>
 
+<div class="goshuin-area" id="goshuinArea">
+  <div class="placeholder">
+    <span class="jp">御朱印は此処に授与（表示）されます</span>
+    <span class="en">Your Goshuin will be displayed here</span>
+  </div>
+</div>
+
 <script>
 document.getElementById("showBtn").onclick = () => {
-  alert("表示ボタンが押されました / Show clicked");
+  alert("ここでCanvas生成を行う");
 };
 
 document.getElementById("saveBtn").onclick = () => {
-  alert("保存ボタンが押されました / Save clicked");
+  alert("ここで保存処理");
 };
 </script>
 
