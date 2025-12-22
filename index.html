@@ -18,32 +18,36 @@ body {
   font-family: sans-serif;
 }
 
-/* ページ上部の大きなタイトル（朱色＋白縁取り） */
+/* ページ上部のタイトル（全体を75%サイズに） */
 .header-title {
-  font-size: 48px;
+  font-size: 36px; /* 48pxの75% */
   font-weight: bold;
+  font-family: 'KouzanBrush', sans-serif;
   color: #d40000; /* 朱色 */
-  -webkit-text-stroke: 3px white; /* 白縁取り（Chrome/Safari） */
-  text-stroke: 3px white; /* 標準（一部ブラウザ） */
+  -webkit-text-stroke: 1.5px white;
+  text-stroke: 1.5px white;
   text-shadow: 
-    3px 3px 0 white, -3px -3px 0 white,
-    3px -3px 0 white, -3px 3px 0 white,
-    0 3px 0 white, 0 -3px 0 white,
-    3px 0 0 white, -3px 0 0 white;
+    2px 2px 0 white, -2px -2px 0 white,
+    2px -2px 0 white, -2px 2px 0 white,
+    0 2px 0 white, 0 -2px 0 white,
+    2px 0 0 white, -2px 0 0 white;
   margin-bottom: 30px;
   letter-spacing: 4px;
 }
 
-/* 英語部分は縁取りなし・別フォント */
 .header-title-en {
   display: block;
-  font-size: 32px;
+  font-size: 24px; /* 32pxの75% */
   color: #d40000;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
   margin-top: 10px;
-  -webkit-text-stroke: 0;
-  text-stroke: 0;
-  text-shadow: none;
+  -webkit-text-stroke: 1px white;
+  text-stroke: 1px white;
+  text-shadow: 
+    1.5px 1.5px 0 white, -1.5px -1.5px 0 white,
+    1.5px -1.5px 0 white, -1.5px 1.5px 0 white,
+    0 1.5px 0 white, 0 -1.5px 0 white,
+    1.5px 0 0 white, -1.5px 0 0 white;
 }
 
 #wrap {
@@ -51,14 +55,13 @@ body {
   position: relative;
 }
 
-/* ボタンエリア：常に最前面で操作可能 */
 .controls {
   position: absolute;
   top: 8px;
   left: 8px;
   display: flex;
   gap: 12px;
-  z-index: 100; /* 十分高い値で最前面に */
+  z-index: 100;
 }
 
 button {
@@ -76,33 +79,30 @@ button:hover {
   background: #ffffff;
 }
 
-/* キャンバス */
 canvas {
   display: block;
   max-width: 90vw;
   height: auto;
   border: 2px solid #333;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  background: white; /* 読み込み前も見やすいように */
+  background: white;
 }
 </style>
 </head>
 <body>
 
-<!-- ページ上部の大きなタイトル -->
+<!-- ページ上部のタイトル（75%サイズ） -->
 <div class="header-title">
   御朱印授与所
   <span class="header-title-en">Goshuin Granting Office</span>
 </div>
 
 <div id="wrap">
-  <!-- ボタンエリア（最前面） -->
   <div class="controls">
     <button id="generateBtn">生成<br><span style="font-size:12px;">Generate</span></button>
     <button id="downloadBtn">保存<br><span style="font-size:12px;">Download</span></button>
   </div>
 
-  <!-- キャンバス -->
   <canvas id="goshuinCanvas"></canvas>
 </div>
 
@@ -113,40 +113,37 @@ const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
-/* 初期表示（読みやすく和英併記） */
+/* 初期表示（案内文字も75%サイズに） */
 canvas.width = 420;
-canvas.height = 300; // 高さを少し増やして文字が収まるように
+canvas.height = 300;
 ctx.fillStyle = "#ffffff";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-// 外枠
 ctx.strokeStyle = "#333";
 ctx.lineWidth = 3;
 ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-// 和文（筆文字フォント）
-ctx.font = "30px 'KouzanBrush'";
+// 和文案内（MS Gothic、サイズ75% ≈23px）
+ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
 ctx.fillStyle = "#000";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 20);
+ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 15);
 
-// 英文（標準フォント）
-ctx.font = "20px sans-serif";
+// 英文案内
+ctx.font = "18px sans-serif";
 ctx.fillStyle = "#444";
 ctx.fillText("Goshuin will be displayed here", canvas.width/2, canvas.height/2 + 20);
 
-/* 日付を和風に変換 */
 function getJapaneseDate(date) {
   const kan = ["〇","一","二","三","四","五","六","七","八","九"];
-  const y = date.getFullYear() - 2018; // 令和元年 = 2019
+  const y = date.getFullYear() - 2018;
   const m = date.getMonth() + 1;
   const d = date.getDate();
 
   let yearStr = "令和";
   if (y === 1) yearStr += "元";
   else yearStr += String(y).split("").map(n => kan[n]).join("");
-
   yearStr += "年";
 
   let monthStr = m <= 10 ? kan[m] : "十" + (m-10 === 0 ? "" : kan[m-10]);
@@ -157,7 +154,6 @@ function getJapaneseDate(date) {
   else if (d < 20) dayStr = "十" + (d-10 === 0 ? "" : kan[d-10]);
   else if (d < 30) dayStr = "二十" + kan[d-20];
   else dayStr = "三十" + kan[d-30];
-
   dayStr += "日";
 
   return yearStr + monthStr + dayStr;
@@ -171,7 +167,7 @@ function drawVertical(text, x, y, lh) {
 
 function generateGoshuin() {
   const img = new Image();
-  img.crossOrigin = "anonymous"; // 必要に応じて
+  img.crossOrigin = "anonymous";
   img.src = templateUrl;
   img.onload = () => {
     canvas.width = img.width;
