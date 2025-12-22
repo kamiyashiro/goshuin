@@ -18,36 +18,36 @@ body {
   font-family: sans-serif;
 }
 
-/* ページ上部のタイトル（和文） */
+/* 和文タイトル：縁取りを細く */
 .header-title-ja {
-  font-size: 36px; /* 前回の75%サイズ */
+  font-size: 36px;
   font-family: 'KouzanBrush', sans-serif;
   font-weight: bold;
   color: #d40000; /* 朱色 */
-  -webkit-text-stroke: 1.5px white; /* 細い白縁取り */
-  text-stroke: 1.5px white;
+  -webkit-text-stroke: 0.8px white; /* 細い白縁取り */
+  text-stroke: 0.8px white;
   text-shadow: 
-    2px 2px 0 white, -2px -2px 0 white,
-    2px -2px 0 white, -2px 2px 0 white,
-    0 2px 0 white, 0 -2px 0 white,
-    2px 0 0 white, -2px 0 0 white;
+    1px 1px 0 white, -1px -1px 0 white,
+    1px -1px 0 white, -1px 1px 0 white,
+    0 1px 0 white, 0 -1px 0 white,
+    1px 0 0 white, -1px 0 0 white;
   margin-bottom: 8px;
   letter-spacing: 4px;
 }
 
-/* ページ上部のタイトル（英文） */
+/* 英文タイトル：縁取りをさらに細く */
 .header-title-en {
   display: block;
   font-size: 24px;
   font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
-  color: #d40000; /* 朱色（ご指示通り） */
-  -webkit-text-stroke: 1.2px white; /* 細い白縁取り */
-  text-stroke: 1.2px white;
+  color: #d40000; /* 朱色 */
+  -webkit-text-stroke: 0.6px white; /* とても細い白縁取り */
+  text-stroke: 0.6px white;
   text-shadow: 
-    1.5px 1.5px 0 white, -1.5px -1.5px 0 white,
-    1.5px -1.5px 0 white, -1.5px 1.5px 0 white,
-    0 1.5px 0 white, 0 -1.5px 0 white,
-    1.5px 0 0 white, -1.5px 0 0 white;
+    1px 1px 0 white, -1px -1px 0 white,
+    1px -1px 0 white, -1px 1px 0 white,
+    0 1px 0 white, 0 -1px 0 white,
+    1px 0 0 white, -1px 0 0 white;
   letter-spacing: 2px;
 }
 
@@ -92,7 +92,7 @@ canvas {
 </head>
 <body>
 
-<!-- ページ上部のタイトル（両方朱色＋白縁取り） -->
+<!-- タイトル（朱色文字＋とても細い白縁取り） -->
 <div>
   <div class="header-title-ja">御朱印授与所</div>
   <div class="header-title-en">Goshuin Granting Office</div>
@@ -125,7 +125,7 @@ ctx.strokeStyle = "#333";
 ctx.lineWidth = 3;
 ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-// 案内文字（サイズ75%適用済み、黒色・MS Gothic）
+// 案内文字（黒・MS Gothic）
 ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
 ctx.fillStyle = "#000";
 ctx.textAlign = "center";
