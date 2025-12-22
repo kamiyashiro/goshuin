@@ -18,21 +18,12 @@ body {
   text-align: center;
 }
 
-/* 全体ラッパー */
 #wrap {
   display: inline-block;
   position: relative;
 }
 
-/* キャンバス */
-canvas {
-  display: block;
-  max-width: 90vw;
-  height: auto;
-  background: transparent;
-}
-
-/* ボタンをキャンバス上部に重ねる */
+/* ボタンエリア：必ず見える */
 .controls {
   position: absolute;
   top: 8px;
@@ -43,9 +34,18 @@ canvas {
 }
 
 button {
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 14px;
   cursor: pointer;
+  background: #f5f5f5;     /* ← 不透明 */
+  border: 1px solid #333;
+}
+
+/* キャンバス */
+canvas {
+  display: block;
+  max-width: 90vw;
+  height: auto;
 }
 </style>
 </head>
@@ -69,59 +69,62 @@ const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 
-/* 和暦（令和）＋漢数字 */
+/* 初期表示（必ず読める） */
+canvas.width = 420;
+canvas.height = 180;
+
+// 初期表示だけ白背景
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// 枠
+ctx.strokeStyle = "#333";
+ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+// 文字
+ctx.font = "20px 'KouzanBrush'";
+ctx.fillStyle = "#000";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2);
+
+/* 以下、生成処理（前回と同じ） */
+
 function getJapaneseDate(date) {
   const kan = ["〇","一","二","三","四","五","六","七","八","九"];
   const y = date.getFullYear() - 2018;
   const m = date.getMonth() + 1;
   const d = date.getDate();
-
-  const yStr = String(y).split("").map(n=>kan[n]).join("");
-  const mStr = m<=10 ? kan[m] : "十" + kan[m-10];
-  const dStr =
-    d<=10 ? kan[d] :
-    d<20 ? "十" + kan[d-10] :
-    d<30 ? "二十" + kan[d-20] :
-    "三十";
-
-  return `令和${yStr}年${mStr}月${dStr}日`;
+  return `令和${String(y).split("").map(n=>kan[n]).join("")}年` +
+         `${m<=10?kan[m]:"十"+kan[m-10]}月` +
+         `${d<=10?kan[d]:d<20?"十"+kan[d-10]:d<30?"二十"+kan[d-20]:"三十"}日`;
 }
 
-/* 縦書き */
 function drawVertical(text, x, y, lh) {
-  for (let i=0; i<text.length; i++) {
-    ctx.fillText(text[i], x, y + i * lh);
-  }
+  for (let i=0;i<text.length;i++) ctx.fillText(text[i], x, y + i*lh);
 }
 
 function generateGoshuin() {
   const img = new Image();
   img.src = templateUrl;
-
   img.onload = () => {
     canvas.width = img.width;
     canvas.height = img.height;
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0);
 
     const dateStr = getJapaneseDate(new Date());
+    const size = Math.floor((canvas.width/16)*1.5);
 
-    const baseSize = canvas.width / 16;
-    const fontSize = Math.floor(baseSize * 1.5); // 150%
-
-    ctx.font = `bold ${fontSize}px 'KouzanBrush'`;
+    ctx.font = `bold ${size}px 'KouzanBrush'`;
     ctx.fillStyle = "#000";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
-    const lineHeight = fontSize * 1.15;
+    const lh = size * 1.15;
+    const x = size * 1.2;
+    const y = canvas.height - lh * dateStr.length - size * 0.5;
 
-    // 左下詰め
-    const x = fontSize * 1.2;
-    const y = canvas.height - lineHeight * dateStr.length - fontSize * 0.5;
-
-    drawVertical(dateStr, x, y, lineHeight);
+    drawVertical(dateStr, x, y, lh);
   };
 }
 
@@ -134,15 +137,6 @@ function downloadGoshuin() {
 
 generateBtn.onclick = generateGoshuin;
 downloadBtn.onclick = downloadGoshuin;
-
-/* 初期表示：最小・文字だけ */
-canvas.width = 400;
-canvas.height = 200;
-ctx.font = "20px 'KouzanBrush'";
-ctx.fillStyle = "#000";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2);
 </script>
 
 </body>
