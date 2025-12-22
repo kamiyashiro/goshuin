@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -11,130 +10,134 @@
   src: url('./KouzanBrushFont.woff2') format('woff2');
 }
 
-/* ページ全体背景：幅合わせ */
 body {
   margin: 0;
-  min-height: 100vh;
-  background: url('./KamiyashiroGoshuin.webp') no-repeat top center;
-  background-size: 100vw auto;   /* ★ ウィンドウ幅合わせ */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'KouzanBrush', serif;
-}
-
-/* UIラッパー */
-.wrapper {
-  background: rgba(255,255,255,0.85);
-  padding: 20px 24px;
-  border-radius: 8px;
+  padding: 20px;
+  background: url('./Iwakura.webp') no-repeat center center fixed;
+  background-size: cover;
   text-align: center;
 }
 
-/* 御朱印生成窓 */
-canvas {
-  width: 600px;       /* 表示サイズ固定 */
-  height: 900px;
-  background: #fff;   /* 透け防止 */
-  border: 2px solid #333;
-  display: block;
-  margin: 0 auto;
+#wrap {
+  display: inline-block;
+  position: relative;
+}
+
+/* ボタンエリア：必ず見える */
+.controls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
 }
 
 button {
-  margin: 12px 8px 0;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 6px 14px;
+  font-size: 14px;
   cursor: pointer;
+  background: #f5f5f5;     /* ← 不透明 */
+  border: 1px solid #333;
+}
+
+/* キャンバス */
+canvas {
+  display: block;
+  max-width: 90vw;
+  height: auto;
 }
 </style>
 </head>
 
 <body>
-<div class="wrapper">
-  <h2>御朱印ジェネレーター</h2>
+
+<div id="wrap">
+  <div class="controls">
+    <button id="generateBtn">生成</button>
+    <button id="downloadBtn">保存</button>
+  </div>
 
   <canvas id="goshuinCanvas"></canvas>
-
-  <div>
-    <button id="generateBtn">御朱印生成</button>
-    <button id="downloadBtn">ダウンロード（WebP）</button>
-  </div>
 </div>
 
 <script>
+const templateUrl = "KamiyashiroGoshuin.webp";
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
 
-/* 描画解像度（巨大化防止） */
-canvas.width  = 1200;
-canvas.height = 1800;
+const generateBtn = document.getElementById("generateBtn");
+const downloadBtn = document.getElementById("downloadBtn");
 
-/* 和暦（令和のみ） */
-function getJapaneseDate(d) {
-  const k = ["〇","一","二","三","四","五","六","七","八","九"];
-  const y = [...String(d.getFullYear() - 2018)].map(n=>k[n]).join("");
-  const m = d.getMonth()+1;
-  const day = d.getDate();
+/* 初期表示（必ず読める） */
+canvas.width = 420;
+canvas.height = 180;
 
-  const ms = m<=10 ? k[m] : "十"+(m-10?k[m-10]:"");
-  const ds =
-    day<=10 ? k[day] :
-    day<20 ? "十"+(day-10?k[day-10]:"") :
-    day<30 ? "二十"+(day-20?k[day-20]:"") :
-    "三十";
+// 初期表示だけ白背景
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  return `令和${y}年${ms}月${ds}日`;
+// 枠
+ctx.strokeStyle = "#333";
+ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+// 文字
+ctx.font = "20px 'KouzanBrush'";
+ctx.fillStyle = "#000";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2);
+
+/* 以下、生成処理（前回と同じ） */
+
+function getJapaneseDate(date) {
+  const kan = ["〇","一","二","三","四","五","六","七","八","九"];
+  const y = date.getFullYear() - 2018;
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  return `令和${String(y).split("").map(n=>kan[n]).join("")}年` +
+         `${m<=10?kan[m]:"十"+kan[m-10]}月` +
+         `${d<=10?kan[d]:d<20?"十"+kan[d-10]:d<30?"二十"+kan[d-20]:"三十"}日`;
 }
 
-/* 縦書き */
-function drawVertical(text, x, y, size) {
-  const lh = size * 1.2;
-  for (let i=0; i<text.length; i++) {
-    ctx.fillText(text[i], x, y + i * lh);
-  }
+function drawVertical(text, x, y, lh) {
+  for (let i=0;i<text.length;i++) ctx.fillText(text[i], x, y + i*lh);
 }
 
-/* 初期表示 */
-function preview() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.font = "64px 'KouzanBrush'";
-  ctx.fillStyle = "#000";
-  ctx.textAlign = "center";
-  ctx.fillText("ここ御朱印が表示されます",
-    canvas.width/2, canvas.height/2);
+function generateGoshuin() {
+  const img = new Image();
+  img.src = templateUrl;
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img,0,0);
+
+    const dateStr = getJapaneseDate(new Date());
+    const size = Math.floor((canvas.width/16)*1.5);
+
+    ctx.font = `bold ${size}px 'KouzanBrush'`;
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    const lh = size * 1.15;
+    const x = size * 1.2;
+    const y = canvas.height - lh * dateStr.length - size * 0.5;
+
+    drawVertical(dateStr, x, y, lh);
+  };
 }
 
-/* 御朱印生成 */
-function generate() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  const dateStr = getJapaneseDate(new Date());
-  const size = Math.floor(canvas.width / 16 * 1.5);
-
-  ctx.font = size + "px 'KouzanBrush'";
-  ctx.fillStyle = "#000";
-  ctx.textAlign = "center";
-
-  /* 左下詰め */
-  const totalH = size * 1.2 * dateStr.length;
-  const x = size * 1.1;
-  const y = canvas.height - totalH - size * 0.6;
-
-  drawVertical(dateStr, x, y, size);
-}
-
-/* DL */
-function download() {
+function downloadGoshuin() {
   const a = document.createElement("a");
-  a.download = "KamiyashiroGoshuin.webp";
   a.href = canvas.toDataURL("image/webp");
+  a.download = "KamiyashiroGoshuin.webp";
   a.click();
 }
 
-preview();
-document.getElementById("generateBtn").onclick = generate;
-document.getElementById("downloadBtn").onclick = download;
+generateBtn.onclick = generateGoshuin;
+downloadBtn.onclick = downloadGoshuin;
 </script>
+
 </body>
 </html>
