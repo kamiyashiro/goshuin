@@ -2,23 +2,23 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印ジェネレーター（黒文字・拡大）</title>
+<title>御朱印ジェネレーター</title>
 <style>
   @font-face {
     font-family: 'KouzanBrush';
     src: url('./KouzanBrushFont.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
   }
 
   body {
     font-family: 'KouzanBrush', serif;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 30px;
   }
+
   canvas {
     border: 2px solid #333;
   }
+
   button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -29,76 +29,99 @@
 </head>
 <body>
 
-<h1>御朱印ジェネレーター（黒文字・拡大）</h1>
+<h1>御朱印ジェネレーター</h1>
+
 <canvas id="goshuinCanvas"></canvas><br>
+
 <button id="generateBtn">御朱印生成</button>
 <button id="downloadBtn">ダウンロード（WebP）</button>
 
 <script>
-const templateUrl = "KamiyashiroGoshuin.webp";
+const backgroundUrl = "Iwakura.webp";
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
-const generateBtn = document.getElementById("generateBtn");
-const downloadBtn = document.getElementById("downloadBtn");
 
-// 和暦変換（令和のみ対応）
+// 和暦（令和のみ）
 function getJapaneseDate(date) {
   const era = "令和";
   const year = date.getFullYear() - 2018;
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const kanji = ["〇","一","二","三","四","五","六","七","八","九"];
+  const k = ["〇","一","二","三","四","五","六","七","八","九"];
 
-  const yearStr = Array.from(String(year)).map(d => kanji[+d]).join("");
-  const monthStr = (month<=10?kanji[month]: "十" + (month-10>0?kanji[month-10]:"")) + "月";
-  const dayStr = (day<=10?kanji[day]: day<20? "十" + (day-10>0?kanji[day-10]:""): day<30? "二十" + (day-20>0?kanji[day-20]:""):"三十") + "日";
+  const y = [...String(year)].map(d=>k[d]).join("");
+  const m = month <= 10 ? k[month] : "十" + (month-10 ? k[month-10] : "");
+  const d =
+    day <= 10 ? k[day] :
+    day < 20 ? "十" + (day-10 ? k[day-10] : "") :
+    day < 30 ? "二十" + (day-20 ? k[day-20] : "") :
+    "三十";
 
-  return `${era}${yearStr}年${monthStr}${dayStr}`;
+  return `${era}${y}年${m}月${d}日`;
 }
 
-// 縦書き描画（黒文字・左中央）
-function drawVerticalText(ctx, text, x, y, lineHeight) {
-  for(let i=0; i<text.length; i++){
-    ctx.fillStyle = "#000000"; // 黒色
-    ctx.fillText(text[i], x, y + i * lineHeight);
+// 縦書き
+function drawVertical(text, x, y, size) {
+  const lh = size * 1.2;
+  for (let i = 0; i < text.length; i++) {
+    ctx.fillText(text[i], x, y + i * lh);
   }
 }
 
-function generateGoshuin() {
+// 背景＋生成前表示
+function drawPreview() {
   const img = new Image();
-  img.crossOrigin = "anonymous";
-  img.src = templateUrl;
+  img.src = backgroundUrl;
   img.onload = () => {
     canvas.width = img.width;
     canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    const now = new Date();
-    const dateStr = getJapaneseDate(now);
-
-    const fontSize = Math.floor(canvas.width / 16 * 1.5); // 現在比150%
-    ctx.font = fontSize + "px 'KouzanBrush', serif";
+    ctx.font = Math.floor(canvas.width / 18) + "px 'KouzanBrush'";
+    ctx.fillStyle = "#000";
     ctx.textAlign = "center";
-
-    const lineHeight = fontSize * 1.2;
-    const x = fontSize * 1.2;
-    const y = (canvas.height - lineHeight * dateStr.length) / 2;
-
-    drawVerticalText(ctx, dateStr, x, y, lineHeight);
+    ctx.fillText("ここ御朱印が表示されます", canvas.width / 2, canvas.height / 2);
   };
 }
 
-function downloadGoshuin() {
-  const link = document.createElement("a");
-  link.download = "KamiyashiroGoshuin.webp";
-  link.href = canvas.toDataURL("image/webp");
-  link.click();
+// 御朱印生成
+function generateGoshuin() {
+  const img = new Image();
+  img.src = backgroundUrl;
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const dateStr = getJapaneseDate(new Date());
+    const fontSize = Math.floor(canvas.width / 16 * 1.5);
+
+    ctx.font = fontSize + "px 'KouzanBrush'";
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+
+    // 左下詰め
+    const x = fontSize * 1.1;
+    const totalH = fontSize * 1.2 * dateStr.length;
+    const y = canvas.height - totalH - fontSize * 0.6;
+
+    drawVertical(dateStr, x, y, fontSize);
+  };
 }
 
-generateBtn.addEventListener("click", generateGoshuin);
-downloadBtn.addEventListener("click", downloadGoshuin);
+// ダウンロード
+function downloadGoshuin() {
+  const a = document.createElement("a");
+  a.download = "KamiyashiroGoshuin.webp";
+  a.href = canvas.toDataURL("image/webp");
+  a.click();
+}
+
+document.getElementById("generateBtn").onclick = generateGoshuin;
+document.getElementById("downloadBtn").onclick = downloadGoshuin;
+
+// 初期表示
+drawPreview();
 </script>
 
 </body>
