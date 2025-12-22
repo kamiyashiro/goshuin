@@ -2,139 +2,105 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>御朱印授受託所 | Goshuin Issuance Desk</title>
+<title>御朱印生成</title>
 
 <style>
-@font-face {
-  font-family: "KouzanBrush";
-  src: url("./KouzanBrushFont.woff2") format("woff2");
+/* ===== 全体背景 ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background: #f5f2ec;
+  background: url("Iwakura.webp") no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: serif;
+}
+
+/* ===== メインUI ===== */
+#app {
+  background: rgba(255,255,255,0.9);
+  padding: 16px;
+  border-radius: 8px;
+  max-width: 90vw;
+}
+
+/* ===== 御朱印表示エリア ===== */
+#goshuin-area {
+  position: relative;
+  width: min(80vw, 600px);   /* 最大でも画面内 */
+  aspect-ratio: 3 / 4;      /* 御朱印比率 */
+}
+
+/* 御朱印台紙 */
+#goshuin-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 文字レイヤー */
+.goshuin-text {
+  position: absolute;
+  writing-mode: vertical-rl;
+  font-size: 24px;
+  color: #000;
+  white-space: nowrap;
+}
+
+/* 日付 */
+#date {
+  bottom: 8%;
+  left: 10%;
+  font-size: 18px;
+}
+
+/* ===== 操作ボタン ===== */
+#controls {
+  margin-top: 12px;
   text-align: center;
 }
 
-/* 英文専用（筆文字禁止） */
-.en {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont,
-               "Segoe UI", Roboto, Arial, sans-serif;
-}
-
-/* ===== ヘッダー ===== */
-.header {
-  margin-top: 20px;
-  pointer-events: none;
-}
-
-.header .jp {
-  font-family: "KouzanBrush";
-  font-size: 56px;
-  color: #b40000;
-  -webkit-text-stroke: 2px #ffffff;
-  text-shadow:
-    2px 2px 0 #ffffff,
-   -2px 2px 0 #ffffff,
-    2px -2px 0 #ffffff,
-   -2px -2px 0 #ffffff;
-}
-
-.header .en {
-  display: block;
-  font-size: 20px;
-  margin-top: 6px;
-  color: #333;
-}
-
-/* ===== ボタン ===== */
-.controls {
-  margin: 20px 0;
-  position: relative;
-  z-index: 10;
-}
-
 button {
-  margin: 0 10px;
-  padding: 12px 26px;
-  font-size: 20px;
-  background: #fff;
-  border: 2px solid #333;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button .jp {
-  font-family: "KouzanBrush";
-}
-
-button .en {
-  display: block;
-  font-size: 12px;
-}
-
-/* ===== 御朱印表示枠（基準） ===== */
-.goshuin-area {
-  width: 90%;
-  max-width: 900px;
-  height: 600px;           /* ← ここが超重要：基準サイズ */
-  margin: 20px auto 40px;
-  border: 2px dashed #999;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 初期メッセージ */
-.placeholder .jp {
-  font-family: "KouzanBrush";
-  font-size: 28px;
-}
-
-.placeholder .en {
-  display: block;
+  padding: 6px 12px;
   font-size: 14px;
-  margin-top: 6px;
-  color: #444;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <span class="jp">御朱印授受託所</span>
-  <span class="en">Goshuin Issuance Desk</span>
-</div>
+<div id="app">
 
-<div class="controls">
-  <button id="showBtn">
-    <span class="jp">表示</span>
-    <span class="en">Show</span>
-  </button>
-  <button id="saveBtn">
-    <span class="jp">保存</span>
-    <span class="en">Save</span>
-  </button>
-</div>
+  <div id="goshuin-area">
+    <img id="goshuin-bg" src="KamiyashiroGoshuin.webp" alt="御朱印">
 
-<div class="goshuin-area" id="goshuinArea">
-  <div class="placeholder">
-    <span class="jp">御朱印は此処に授与（表示）されます</span>
-    <span class="en">Your Goshuin will be displayed here</span>
+    <div class="goshuin-text" style="top:10%; right:20%;">神社名</div>
+    <div class="goshuin-text" id="date"></div>
   </div>
+
+  <div id="controls">
+    <button onclick="updateDate()">日付更新</button>
+  </div>
+
 </div>
 
 <script>
-document.getElementById("showBtn").onclick = () => {
-  alert("ここでCanvas生成を行う");
-};
+function updateDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  document.getElementById("date").textContent =
+    `${y}年${m}月${day}日`;
+}
 
-document.getElementById("saveBtn").onclick = () => {
-  alert("ここで保存処理");
-};
+updateDate();
 </script>
 
 </body>
