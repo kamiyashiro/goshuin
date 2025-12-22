@@ -5,92 +5,106 @@
 <title>御朱印ジェネレーター</title>
 
 <style>
-  @font-face {
-    font-family: 'KouzanBrush';
-    src: url('./KouzanBrushFont.woff2') format('woff2');
-  }
+@font-face {
+  font-family: 'KouzanBrush';
+  src: url('./KouzanBrushFont.woff2') format('woff2');
+}
 
-  /* ★ ページ全体の背景 */
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background: url('./Iwakura.webp') no-repeat center center fixed;
-    background-size: contain; /* cover にしないのが御朱印向き */
-    font-family: 'KouzanBrush', serif;
-    text-align: center;
-  }
+/* ページ全体背景 */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: url('./Iwakura.webp') no-repeat center center fixed;
+  background-size: contain;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'KouzanBrush', serif;
+}
 
-  .wrapper {
-    padding-top: 40px;
-  }
+/* UIラッパー */
+.wrapper {
+  background: rgba(255,255,255,0.85);
+  padding: 20px 24px;
+  border-radius: 8px;
+  text-align: center;
+}
 
-  canvas {
-    background: transparent;   /* ★ 重要 */
-    border: 2px solid #333;     /* 不要なら削除OK */
-  }
+/* 御朱印生成窓 */
+canvas {
+  width: 600px;        /* 表示サイズ */
+  height: 900px;
+  background: #fff;    /* 透け防止 */
+  border: 2px solid #333;
+  display: block;
+  margin: 0 auto;
+}
 
-  button {
-    margin: 15px 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+button {
+  margin: 12px 8px 0;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 <div class="wrapper">
-  <h1>御朱印ジェネレーター</h1>
+  <h2>御朱印ジェネレーター</h2>
 
-  <canvas id="goshuinCanvas"></canvas><br>
+  <canvas id="goshuinCanvas"></canvas>
 
-  <button id="generateBtn">御朱印生成</button>
-  <button id="downloadBtn">ダウンロード（WebP）</button>
+  <div>
+    <button id="generateBtn">御朱印生成</button>
+    <button id="downloadBtn">ダウンロード（WebP）</button>
+  </div>
 </div>
 
 <script>
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
 
-// キャンバスサイズ（背景画像に合わせる想定）
+/* 描画解像度（重要） */
 canvas.width  = 1200;
-canvas.height = 1600;
+canvas.height = 1800;
 
-// 和暦（令和）
-function getJapaneseDate(date) {
+/* 和暦（令和のみ） */
+function getJapaneseDate(d) {
   const k = ["〇","一","二","三","四","五","六","七","八","九"];
-  const y = [...String(date.getFullYear() - 2018)].map(d=>k[d]).join("");
-  const m = date.getMonth()+1;
-  const d = date.getDate();
+  const y = [...String(d.getFullYear() - 2018)].map(n=>k[n]).join("");
+  const m = d.getMonth()+1;
+  const day = d.getDate();
 
   const ms = m<=10 ? k[m] : "十"+(m-10?k[m-10]:"");
   const ds =
-    d<=10 ? k[d] :
-    d<20 ? "十"+(d-10?k[d-10]:"") :
-    d<30 ? "二十"+(d-20?k[d-20]:"") :
+    day<=10 ? k[day] :
+    day<20 ? "十"+(day-10?k[day-10]:"") :
+    day<30 ? "二十"+(day-20?k[day-20]:"") :
     "三十";
 
   return `令和${y}年${ms}月${ds}日`;
 }
 
-// 縦書き
+/* 縦書き */
 function drawVertical(text, x, y, size) {
   const lh = size * 1.2;
   for (let i=0; i<text.length; i++) {
-    ctx.fillText(text[i], x, y + i*lh);
+    ctx.fillText(text[i], x, y + i * lh);
   }
 }
 
-// 初期表示
+/* 初期表示 */
 function preview() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.font = "48px 'KouzanBrush'";
+  ctx.font = "64px 'KouzanBrush'";
   ctx.fillStyle = "#000";
   ctx.textAlign = "center";
-  ctx.fillText("ここ御朱印が表示されます", canvas.width/2, canvas.height/2);
+  ctx.fillText("ここ御朱印が表示されます",
+    canvas.width/2, canvas.height/2);
 }
 
-// 生成
+/* 御朱印生成 */
 function generate() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -101,7 +115,7 @@ function generate() {
   ctx.fillStyle = "#000";
   ctx.textAlign = "center";
 
-  // 左下詰め
+  /* 左下詰め */
   const totalH = size * 1.2 * dateStr.length;
   const x = size * 1.1;
   const y = canvas.height - totalH - size * 0.6;
@@ -109,7 +123,7 @@ function generate() {
   drawVertical(dateStr, x, y, size);
 }
 
-// DL
+/* DL */
 function download() {
   const a = document.createElement("a");
   a.download = "KamiyashiroGoshuin.webp";
@@ -118,8 +132,8 @@ function download() {
 }
 
 preview();
-generateBtn.onclick = generate;
-downloadBtn.onclick = download;
+document.getElementById("generateBtn").onclick = generate;
+document.getElementById("downloadBtn").onclick = download;
 </script>
 </body>
 </html>
