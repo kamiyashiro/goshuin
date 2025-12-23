@@ -18,22 +18,20 @@ body {
   font-family: sans-serif;
 }
 
-/* 和文タイトル：縁取りなし */
 .header-title-ja {
   font-size: 36px;
   font-family: 'KouzanBrush', sans-serif;
   font-weight: bold;
-  color: #d40000; /* 朱色 */
+  color: #d40000;
   margin-bottom: 8px;
   letter-spacing: 4px;
 }
 
-/* 英文タイトル：縁取りなし */
 .header-title-en {
   display: block;
   font-size: 24px;
   font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
-  color: #d40000; /* 朱色 */
+  color: #d40000;
   letter-spacing: 2px;
 }
 
@@ -76,9 +74,9 @@ canvas {
 }
 </style>
 </head>
+
 <body>
 
-<!-- タイトル（朱色文字・縁取りなし） -->
 <div>
   <div class="header-title-ja">御朱印授与所</div>
   <div class="header-title-en">Goshuin Granting Office</div>
@@ -106,12 +104,10 @@ canvas.height = 300;
 ctx.fillStyle = "#ffffff";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-// 外枠
 ctx.strokeStyle = "#333";
 ctx.lineWidth = 3;
 ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-// 案内文字
 ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
 ctx.fillStyle = "#000";
 ctx.textAlign = "center";
@@ -119,7 +115,6 @@ ctx.textBaseline = "middle";
 ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 20);
 
 ctx.font = "18px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
-ctx.fillStyle = "#000";
 ctx.fillText("Goshuin will be displayed here", canvas.width/2, canvas.height/2 + 20);
 
 function getJapaneseDate(date) {
@@ -152,6 +147,10 @@ function drawVertical(text, x, y, lh) {
 }
 
 function generateGoshuin() {
+
+  // ★ 生成ボタン押下時に日付を確定（これだけ）
+  const generatedDate = new Date();
+
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = templateUrl;
@@ -160,7 +159,8 @@ function generateGoshuin() {
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
 
-    const dateStr = getJapaneseDate(new Date());
+    const dateStr = getJapaneseDate(generatedDate);
+
     const size = Math.floor((canvas.width / 16) * 1.5);
     ctx.font = `bold ${size}px 'KouzanBrush'`;
     ctx.fillStyle = "#000";
@@ -185,5 +185,6 @@ function downloadGoshuin() {
 generateBtn.onclick = generateGoshuin;
 downloadBtn.onclick = downloadGoshuin;
 </script>
+
 </body>
 </html>
