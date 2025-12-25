@@ -84,8 +84,15 @@ canvas {
 
 <div id="wrap">
   <div class="controls">
-    <button id="generateBtn">生成<br><span style="font-size:12px;">Generate</span></button>
-    <button id="downloadBtn">保存<br><span style="font-size:12px;">Download</span></button>
+    <button id="generateBtn">
+      生成<br><span style="font-size:12px;">Generate</span>
+    </button>
+    <button id="downloadBtn">
+      保存<br><span style="font-size:12px;">Download</span>
+    </button>
+    <button id="resetBtn">
+      初期化<br><span style="font-size:12px;">Reset</span>
+    </button>
   </div>
 
   <canvas id="goshuinCanvas"></canvas>
@@ -97,26 +104,41 @@ const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
 const generateBtn = document.getElementById("generateBtn");
 const downloadBtn = document.getElementById("downloadBtn");
+const resetBtn = document.getElementById("resetBtn");
 
 /* 初期表示 */
-canvas.width = 420;
-canvas.height = 300;
-ctx.fillStyle = "#ffffff";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+function drawInitial() {
+  canvas.width = 420;
+  canvas.height = 300;
 
-ctx.strokeStyle = "#333";
-ctx.lineWidth = 3;
-ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
-ctx.fillStyle = "#000";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillText("御朱印は此処に授与（表示）されます", canvas.width/2, canvas.height/2 - 20);
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-ctx.font = "18px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
-ctx.fillText("Goshuin will be displayed here", canvas.width/2, canvas.height/2 + 20);
+  ctx.font = "23px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(
+    "御朱印は此処に授与（表示）されます",
+    canvas.width / 2,
+    canvas.height / 2 - 20
+  );
 
+  ctx.font = "18px 'MS Gothic', 'ＭＳ ゴシック', sans-serif";
+  ctx.fillText(
+    "Goshuin will be displayed here",
+    canvas.width / 2,
+    canvas.height / 2 + 20
+  );
+}
+
+drawInitial();
+
+/* 和暦（令和） */
 function getJapaneseDate(date) {
   const kan = ["〇","一","二","三","四","五","六","七","八","九"];
   const y = date.getFullYear() - 2018;
@@ -147,21 +169,19 @@ function drawVertical(text, x, y, lh) {
 }
 
 function generateGoshuin() {
-
-  // ★ 生成ボタン押下時に日付を確定（これだけ）
   const generatedDate = new Date();
-
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = templateUrl;
+
   img.onload = () => {
     canvas.width = img.width;
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
 
     const dateStr = getJapaneseDate(generatedDate);
-
     const size = Math.floor((canvas.width / 16) * 1.5);
+
     ctx.font = `bold ${size}px 'KouzanBrush'`;
     ctx.fillStyle = "#000";
     ctx.textAlign = "center";
@@ -182,8 +202,12 @@ function downloadGoshuin() {
   a.click();
 }
 
+/* ボタン */
 generateBtn.onclick = generateGoshuin;
 downloadBtn.onclick = downloadGoshuin;
+resetBtn.onclick = () => {
+  location.reload(); // Ctrl+F5 相当
+};
 </script>
 
 </body>
