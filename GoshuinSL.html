@@ -8,60 +8,18 @@
   font-family: 'KouzanBrush';
   src: url('./KouzanBrushFont.woff2') format('woff2');
 }
-
 body {
-  margin: 0;
-  padding: 20px;
+  margin: 0; padding: 20px;
   background: url('./Iwakura.webp') no-repeat center center fixed;
   background-size: cover;
-  font-family: sans-serif;
-  text-align: center;
+  font-family: sans-serif; text-align: center;
 }
-
-.header-title-ja {
-  font-size: 32px;
-  color: #d40000;
-  margin-bottom: 10px;
-  font-family: 'KouzanBrush', sans-serif;
-}
-
-.header-title-en {
-  display: block;
-  font-size: 20px;
-  color: #d40000;
-  margin-bottom: 10px;
-  font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
-}
-
-#wrap {
-  display: inline-block;
-  position: relative;
-  margin-top: 20px;
-}
-
-.controls {
-  margin-bottom: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-}
-
-select, button, input[type="range"] {
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 2px solid #333;
-  font-weight: bold;
-}
-
-canvas {
-  border: 2px solid #333;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  background: white;
-}
+.header-title-ja { font-size: 32px; color: #d40000; margin-bottom: 10px; font-family: 'KouzanBrush', sans-serif; }
+.header-title-en { display: block; font-size: 20px; color: #d40000; margin-bottom: 10px; font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif; }
+#wrap { display: inline-block; position: relative; margin-top: 20px; }
+.controls { margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: center; }
+select, button, input[type="range"] { padding: 6px 12px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 2px solid #333; font-weight: bold; }
+canvas { border: 2px solid #333; box-shadow: 0 4px 12px rgba(0,0,0,0.4); background: white; }
 </style>
 </head>
 <body>
@@ -101,10 +59,9 @@ const posXSlider = document.getElementById("posXSlider");
 const posYSlider = document.getElementById("posYSlider");
 const posXLabel = document.getElementById("posXLabel");
 const posYLabel = document.getElementById("posYLabel");
-
 const yearSelect = document.getElementById("yearSelect");
 const nowYear = new Date().getFullYear();
-for (let y = nowYear - 4; y <= nowYear + 5; y++) {
+for (let y = nowYear-4; y <= nowYear+5; y++) {
   const option = document.createElement("option");
   option.value = y;
   option.textContent = y + "年";
@@ -117,28 +74,32 @@ fontSizeSlider.oninput = () => { fontSizeLabel.textContent = fontSizeSlider.valu
 posXSlider.oninput = () => { posXLabel.textContent = posXSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 posYSlider.oninput = () => { posYLabel.textContent = posYSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 
-function getSelectedYear() {
-  return parseInt(yearSelect.value, 10);
-}
+function getSelectedYear(){ return parseInt(yearSelect.value,10); }
 
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
-function getJapaneseDateString(year, month) {
-  const y = year - 2018;
-  const yearStr = "令和" + (y === 1 ? "元" : String(y).split("").map(n => kan[n]).join("")) + "年";
-  let monthStr;
-  if (month <= 10) monthStr = kan[month];
-  else monthStr = "十" + (month-10 === 0 ? "" : kan[month-10]);
-  monthStr += "月";
+
+function numToKanji(n){
+  if(n <=10) return n===10?"十":kan[n];
+  let tens = Math.floor(n/10);
+  let ones = n%10;
+  let str="";
+  if(tens===1) str+="十"; else str+=kan[tens]+"十";
+  if(ones>0) str+=kan[ones];
+  return str;
+}
+
+function getJapaneseDateString(year, month){
+  const y = year-2018;
+  const yearStr = "令和" + (y===1?"元":String(y).split("").map(n=>kan[n]).join("")) + "年";
+  const monthStr = numToKanji(month) + "月";
   return yearStr + monthStr + "吉日";
 }
 
-function drawVertical(text, x, y, lh) {
-  for (let i = 0; i < text.length; i++) ctx.fillText(text[i], x, y + i * lh);
-}
+function drawVertical(text, x, y, lh){ for(let i=0;i<text.length;i++) ctx.fillText(text[i], x, y+i*lh); }
 
-function drawMonth(month, year) {
+function drawMonth(month, year){
   const img = new Image();
-  img.crossOrigin = "anonymous";
+  img.crossOrigin="anonymous";
   img.src = templateUrl;
   img.onload = () => {
     canvas.width = img.width;
@@ -146,24 +107,22 @@ function drawMonth(month, year) {
     ctx.drawImage(img, 0, 0);
 
     const dateStr = getJapaneseDateString(year, month);
-    const size = parseInt(fontSizeSlider.value, 10);
-    const lh = size * 1.15;
-    const x = parseInt(posXSlider.value, 10);
-    const y = parseInt(posYSlider.value, 10);
+    const size = parseInt(fontSizeSlider.value,10);
+    const lh = size*1.15;
+    const x = parseInt(posXSlider.value,10);
+    const y = parseInt(posYSlider.value,10);
 
     ctx.font = `bold ${size}px 'KouzanBrush'`;
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    drawVertical(dateStr, x, y, lh);
+    ctx.fillStyle="#000";
+    ctx.textAlign="center";
+    ctx.textBaseline="top";
+    drawVertical(dateStr,x,y,lh);
   };
 }
 
-// 月切替ボタン
-document.getElementById("prevMonthBtn").onclick = () => { currentMonth = currentMonth > 1 ? currentMonth - 1 : totalMonths; drawMonth(currentMonth, getSelectedYear()); };
-document.getElementById("nextMonthBtn").onclick = () => { currentMonth = currentMonth < totalMonths ? currentMonth + 1 : 1; drawMonth(currentMonth, getSelectedYear()); };
+document.getElementById("prevMonthBtn").onclick = () => { currentMonth = currentMonth>1?currentMonth-1:totalMonths; drawMonth(currentMonth,getSelectedYear()); };
+document.getElementById("nextMonthBtn").onclick = () => { currentMonth = currentMonth<totalMonths?currentMonth+1:1; drawMonth(currentMonth,getSelectedYear()); };
 
-// 保存
 document.getElementById("downloadBtn").onclick = () => {
   const mm = currentMonth.toString().padStart(2,"0");
   const fileName = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
@@ -173,28 +132,27 @@ document.getElementById("downloadBtn").onclick = () => {
   a.click();
 };
 
-// 一括生成
 document.getElementById("generateAllBtn").onclick = () => {
-  for (let month = 1; month <= 12; month++) {
+  for(let month=1;month<=12;month++){
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    img.crossOrigin="anonymous";
     img.src = templateUrl;
-    img.onload = () => {
+    img.onload=()=>{
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img,0,0);
 
-      const dateStr = getJapaneseDateString(getSelectedYear(), month);
-      const size = parseInt(fontSizeSlider.value, 10);
-      const lh = size * 1.15;
-      const x = parseInt(posXSlider.value, 10);
-      const y = parseInt(posYSlider.value, 10);
+      const dateStr = getJapaneseDateString(getSelectedYear(),month);
+      const size = parseInt(fontSizeSlider.value,10);
+      const lh = size*1.15;
+      const x = parseInt(posXSlider.value,10);
+      const y = parseInt(posYSlider.value,10);
 
       ctx.font = `bold ${size}px 'KouzanBrush'`;
-      ctx.fillStyle = "#000";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      drawVertical(dateStr, x, y, lh);
+      ctx.fillStyle="#000";
+      ctx.textAlign="center";
+      ctx.textBaseline="top";
+      drawVertical(dateStr,x,y,lh);
 
       const mm = month.toString().padStart(2,"0");
       const fileName = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
@@ -207,8 +165,7 @@ document.getElementById("generateAllBtn").onclick = () => {
 };
 
 // 初期表示
-drawMonth(currentMonth, getSelectedYear());
+drawMonth(currentMonth,getSelectedYear());
 </script>
-
 </body>
 </html>
