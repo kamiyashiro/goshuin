@@ -88,10 +88,14 @@ canvas {
   <canvas id="goshuinCanvas"></canvas>
 </div>
 
+<!-- JSZip + FileSaver -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.11.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
 <script>
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = false; // 細かい線をくっきり
+ctx.imageSmoothingEnabled = false;
 const templateUrl = "KamiyashiroGoshuinSL.png";
 let currentMonth = 1;
 const totalMonths = 12;
@@ -118,9 +122,7 @@ fontSizeSlider.oninput = () => { fontSizeLabel.textContent = fontSizeSlider.valu
 posXSlider.oninput = () => { posXLabel.textContent = posXSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 posYSlider.oninput = () => { posYLabel.textContent = posYSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 
-function getSelectedYear() {
-  return parseInt(yearSelect.value, 10);
-}
+function getSelectedYear() { return parseInt(yearSelect.value, 10); }
 
 // 漢数字変換
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
@@ -140,44 +142,44 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-// 縦書き描画（stroke + fillで袋文字防止）
+// 縦書き描画（太め・stroke+fillで袋文字防止）
 function drawVertical(text, x, y, lh) {
   for (let i = 0; i < text.length; i++) {
-    // 輪郭
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.strokeStyle = "#111";
     ctx.strokeText(text[i], x, y + i * lh);
-    // 塗り
     ctx.fillText(text[i], x, y + i * lh);
   }
 }
 
 function drawMonth(month, year) {
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  img.src = templateUrl;
-  img.onload = () => {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = templateUrl;
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
 
-    const dateStr = getJapaneseDate(year, month);
-    const size = parseInt(fontSizeSlider.value, 10);
-    const lh = size * 1.15;
-    const x = parseInt(posXSlider.value, 10);
-    const y = parseInt(posYSlider.value, 10);
+      const dateStr = getJapaneseDate(year, month);
+      const size = parseInt(fontSizeSlider.value, 10);
+      const lh = size * 1.15;
+      const x = parseInt(posXSlider.value, 10);
+      const y = parseInt(posYSlider.value, 10);
 
-    ctx.font = `bold ${size}px 'KouzanBrush'`;
-    ctx.fillStyle = "#111";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
+      ctx.font = `bold ${size}px 'KouzanBrush'`;
+      ctx.fillStyle = "#111";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.shadowColor = "#111";
+      ctx.shadowBlur = 1;
 
-    ctx.shadowColor = "#111";
-    ctx.shadowBlur = 1;
-
-    drawVertical(dateStr, x, y, lh);
-  };
+      drawVertical(dateStr, x, y, lh);
+      resolve(); // 完了
+    };
+  });
 }
 
 // 月切替ボタン
@@ -185,21 +187,35 @@ document.getElementById("prevMonthBtn").onclick = () => { currentMonth = current
 document.getElementById("nextMonthBtn").onclick = () => { currentMonth = currentMonth < totalMonths ? currentMonth + 1 : 1; drawMonth(currentMonth, getSelectedYear()); };
 
 // 保存
-document.getElementById("downloadBtn").onclick = () => {
+document.getElementById("downloadBtn").onclick = async () => {
+  await drawMonth(currentMonth, getSelectedYear());
   const mm = currentMonth.toString().padStart(2,"0");
-  const fileName = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
   const a = document.createElement("a");
   a.href = canvas.toDataURL("image/png");
-  a.download = fileName;
+  a.download = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
   a.click();
 };
 
-// 一括保存
-document.getElementById("downloadAllBtn").onclick = () => {
+// 一括保存 ZIP
+document.getElementById("downloadAllBtn").onclick = async () => {
+  const zip = new JSZip();
   const year = getSelectedYear();
+
   for (let m = 1; m <= totalMonths; m++) {
-    drawMonth(m, year);
-    setTimeout(() => {
-      const mm = m.toString().padStart(2,"0");
-      const a = document.createElement("a");
-      a.href = canvas.to
+    await drawMonth(m, year);
+    const dataURL = canvas.toDataURL("image/png");
+    const base64 = dataURL.split(",")[1];
+    const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
+    zip.file(filename, base64, {base64: true});
+  }
+
+  const content = await zip.generateAsync({type:"blob"});
+  saveAs(content, `KamiyashiroGoshuin${year}.zip`);
+};
+
+// 初期表示
+drawMonth(currentMonth, getSelectedYear());
+</script>
+
+</body>
+</html>
