@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>SL用御朱印生成 for Second Life</title>
+<style>
+@font-face {
+  font-family: 'KouzanBrush';
+  src: url('./KouzanBrushFont.woff2') format('woff2');
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: url('./Iwakura.webp') no-repeat center center fixed;
+  background-size: cover;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.header-title-ja {
+  font-size: 32px;
+  color: #d40000;
+  margin-bottom: 10px;
+  font-family: 'KouzanBrush', sans-serif;
+}
+
+.header-title-en {
+  display: block;
+  font-size: 20px;
+  color: #d40000;
+  margin-bottom: 10px;
+  font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
+}
+
+#wrap {
+  display: inline-block;
+  position: relative;
+  margin-top: 20px;
+}
+
+.controls {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  background: rgba(245,245,245,0.95);
+  border: 2px solid #333;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+canvas {
+  border: 2px solid #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  background: white;
+}
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div>
+  <div class="header-title-ja">SL用御朱印生成</div>
+  <div class="header-title-en">Goshuin Generator for Second Life</div>
+</div>
+
+<div id="wrap">
+  <div class="controls">
+    <button id="prevMonthBtn">前月</button>
+    <button id="nextMonthBtn">次月</button>
+    <button id="downloadBtn">保存</button>
+    <button id="generateAllBtn">一括生成</button>
+  </div>
+  <canvas id="goshuinCanvas"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("goshuinCanvas");
+const ctx = canvas.getContext("2d");
+
+const templateUrl = "KamiyashiroGoshuinSL.png";
+let currentMonth = 1;
+const totalMonths = 12;
+const year = new Date().getFullYear(); // 西暦
+
+// 漢数字
+const kan = ["〇","一","二","三","四","五","六","七","八","九"];
+
+// 日付文字列生成
+function getJapaneseDateString(year, month) {
+  let y = year - 2018;
+  let yearStr = "令和";
+  yearStr += (y === 1 ? "元" : String(y).split("").map(n => kan[n]).join("")) + "年";
+
+  let monthStr = month <= 10 ? kan[month] : "十" + (month - 10 === 0 ? "" : kan[month - 10]);
+  monthStr += "月";
+
+  return yearStr + monthStr + "吉日";
+}
+
+// 縦書き描画
+function drawVertical(text, x, y, lh) {
+  for (let i = 0; i < text.length; i++) {
+    ctx.fillText(text[i], x, y + i * lh);
+  }
+}
+
+// 月単位描画
+function drawMonth(month) {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = templateUrl;
+
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const dateStr = getJapaneseDateString(year, month);
+    const size = Math.floor((canvas.width / 16) * 1.5);
+    const lh = size * 1.15;
+    const x = size * 1.2;
+    const y = canvas.height - lh * dateStr.length - size * 0.5;
+
+    ctx.font = `bold ${size}px 'KouzanBrush'`;
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    drawVertical(dateStr, x, y, lh);
+  };
+}
+
+// 現在月切替
+document.getElementById("prevMonthBtn").onclick = () => {
+  currentMonth = currentMonth > 1 ? currentMonth - 1 : totalMonths;
+  drawMonth(currentMonth);
+};
+document.getElementById("nextMonthBtn").onclick = () => {
+  currentMonth = currentMonth < totalMonths ? currentMonth + 1 : 1;
+  drawMonth(currentMonth);
+};
+
+// 現在月ダウンロード
+document.getElementById("downloadBtn").onclick = () => {
+  const mm = currentMonth.toString().padStart(2,"0");
+  const fileName = `KamiyashiroGoshuin${year}${mm}.png`;
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = fileName;
+  a.click();
+};
+
+// 一括生成＆DL（12ヶ月）
+document.getElementById("generateAllBtn").onclick = () => {
+  for (let month = 1; month <= 12; month++) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = templateUrl;
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const dateStr = getJapaneseDateString(year, month);
+      const size = Math.floor((canvas.width / 16) * 1.5);
+      const lh = size * 1.15;
+      const x = size * 1.2;
+      const y = canvas.height - lh * dateStr.length - size * 0.5;
+
+      ctx.font = `bold ${size}px 'KouzanBrush'`;
+      ctx.fillStyle = "#000";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+
+      drawVertical(dateStr, x, y, lh);
+
+      // ダウンロード
+      const mm = month.toString().padStart(2,"0");
+      const fileName = `KamiyashiroGoshuin${year}${mm}.png`;
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = fileName;
+      a.click();
+    };
+  }
+};
+
+// 初期表示
+drawMonth(currentMonth);
+</script>
+
+</body>
+</html>
