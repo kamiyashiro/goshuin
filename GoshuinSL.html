@@ -120,23 +120,21 @@ function getSelectedYear() {
   return parseInt(yearSelect.value, 10);
 }
 
-// 漢数字変換（年・月両方対応）
+// 漢数字変換（年・月とも対応）
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
-function numToKanji(n) {
-  if (n <= 10) return n === 10 ? "十" : kan[n];
-  let tens = Math.floor(n / 10);
-  let ones = n % 10;
-  let str = "";
-  if (tens === 1) str += "十";
-  else str += kan[tens] + "十";
-  if (ones > 0) str += kan[ones];
-  return str;
+function toKanji(n) {
+  if (n <= 9) return kan[n];
+  if (n === 10) return "十";
+  if (n < 20) return "十" + (n % 10 === 0 ? "" : kan[n % 10]);
+  if (n < 30) return "二十" + (n % 10 === 0 ? "" : kan[n % 10]);
+  if (n < 40) return "三十" + (n % 10 === 0 ? "" : kan[n % 10]);
+  return ""; // 年・月で 40以上は想定外
 }
 
 function getJapaneseDate(year, month) {
   const y = year - 2018;
-  const yearStr = y === 1 ? "令和元年" : "令和" + String(y).split("").map(n => kan[n]).join("") + "年";
-  const monthStr = numToKanji(month) + "月";
+  const yearStr = y === 1 ? "令和元年" : "令和" + toKanji(y) + "年";
+  const monthStr = toKanji(month) + "月";
   return yearStr + monthStr + "吉日";
 }
 
