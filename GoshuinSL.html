@@ -142,13 +142,13 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-// 縦書き描画（前の太さ・stroke+fillで袋文字防止）
+// 縦書き描画（潰れにくく調整）
 function drawVertical(text, x, y, lh) {
   for (let i = 0; i < text.length; i++) {
-    ctx.lineWidth = 2;
+    ctx.fillText(text[i], x, y + i * lh);      // まず塗り
+    ctx.lineWidth = 1.2;                       // 輪郭は細め
     ctx.strokeStyle = "#111";
-    ctx.strokeText(text[i], x, y + i * lh);
-    ctx.fillText(text[i], x, y + i * lh);
+    ctx.strokeText(text[i], x, y + i * lh);    // 輪郭で補強
   }
 }
 
@@ -174,7 +174,7 @@ function drawMonth(month, year) {
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.shadowColor = "#111";
-      ctx.shadowBlur = 1;
+      ctx.shadowBlur = 0.5; // 小さめで潰れ防止
 
       drawVertical(dateStr, x, y, lh);
       resolve();
