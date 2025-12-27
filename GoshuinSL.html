@@ -192,7 +192,8 @@ function drawVertical(text, x, y, lh, correction=0) {
   }
 }
 
-async function drawMonth(month, year) {
+// 画像ロードと描画を Promise 化
+function drawMonth(month, year) {
   return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -216,9 +217,12 @@ async function drawMonth(month, year) {
       ctx.font = `bold ${size}px 'KouzanBrush'`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
+
       drawVertical(dateStr, x, y, lh, correction);
+
       resolve();
     };
+    img.onerror = () => { console.error("テンプレート画像読み込み失敗"); resolve(); };
   });
 }
 
@@ -232,7 +236,6 @@ const controls = [
   [posXSlider,posXLabel,"px"],
   [posYSlider,posYLabel,"px"]
 ];
-
 controls.forEach(([slider,label,suffix])=>{
   slider.oninput = ()=>{ label.textContent = slider.value+suffix; drawMonth(currentMonth,getSelectedYear()); };
 });
@@ -252,16 +255,16 @@ document.getElementById("downloadBtn").onclick = async () => {
   a.click();
 };
 
-// 一括 ZIP
+// 一括 ZIP（非同期で順番に生成）
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
   for(let m=1;m<=totalMonths;m++){
-    await drawMonth(m,year);
+    await drawMonth(m,year); // 描画完了まで待つ
     const dataURL = canvas.toDataURL("image/png");
     const base64 = dataURL.split(",")[1];
     const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
-    zip.file(filename,base64,{base64:true});
+    zip.file(filename, base64, {base64:true});
   }
   const content = await zip.generateAsync({type:"blob"});
   saveAs(content, `KamiyashiroGoshuin${year}.zip`);
