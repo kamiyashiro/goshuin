@@ -140,13 +140,19 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-// 全文字描画
+// 全文字描画（中塗り＋オプションで線も）
 function drawVertical(text, x, y, lh, correction=0) {
   for (let i = 0; i < text.length; i++) {
     let ch = text[i];
     let size = parseInt(ctx.font.match(/\d+/)[0]);
     ctx.font = ctx.font.replace(/\d+px/, (size + correction) + "px");
+
+    // 中塗り
     ctx.fillText(ch, x, y + i * lh);
+
+    // 外縁も必要ならここで strokeText 追加可能
+    // ctx.strokeText(ch, x, y + i * lh);
+
     ctx.font = ctx.font.replace(/\d+px/, size + "px"); // 元に戻す
   }
 }
