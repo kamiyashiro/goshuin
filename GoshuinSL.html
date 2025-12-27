@@ -140,8 +140,16 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
+// 縦書き描画（stroke + fillで袋文字防止）
 function drawVertical(text, x, y, lh) {
-  for (let i = 0; i < text.length; i++) ctx.fillText(text[i], x, y + i * lh);
+  for (let i = 0; i < text.length; i++) {
+    // 輪郭
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#111";
+    ctx.strokeText(text[i], x, y + i * lh);
+    // 塗り
+    ctx.fillText(text[i], x, y + i * lh);
+  }
 }
 
 function drawMonth(month, year) {
@@ -164,11 +172,11 @@ function drawMonth(month, year) {
     ctx.fillStyle = "#111";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
+
     ctx.shadowColor = "#111";
     ctx.shadowBlur = 1;
 
-    // 文字を2回描画して濃くする
-    for (let n = 0; n < 2; n++) drawVertical(dateStr, x, y, lh);
+    drawVertical(dateStr, x, y, lh);
   };
 }
 
@@ -194,16 +202,4 @@ document.getElementById("downloadAllBtn").onclick = () => {
     setTimeout(() => {
       const mm = m.toString().padStart(2,"0");
       const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = `KamiyashiroGoshuin${year}${mm}.png`;
-      a.click();
-    }, 200 * m); // 少し遅延を入れて順に生成
-  }
-};
-
-// 初期表示
-drawMonth(currentMonth, getSelectedYear());
-</script>
-
-</body>
-</html>
+      a.href = canvas.to
