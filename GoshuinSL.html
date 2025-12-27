@@ -83,6 +83,7 @@ canvas {
     <button id="prevMonthBtn">前月</button>
     <button id="nextMonthBtn">次月</button>
     <button id="downloadBtn">保存</button>
+    <button id="downloadAllBtn">全て保存</button>
   </div>
   <canvas id="goshuinCanvas"></canvas>
 </div>
@@ -120,7 +121,7 @@ function getSelectedYear() {
   return parseInt(yearSelect.value, 10);
 }
 
-// 漢数字変換（年・月とも対応）
+// 漢数字変換
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
 function toKanji(n) {
   if (n <= 9) return kan[n];
@@ -128,7 +129,7 @@ function toKanji(n) {
   if (n < 20) return "十" + (n % 10 === 0 ? "" : kan[n % 10]);
   if (n < 30) return "二十" + (n % 10 === 0 ? "" : kan[n % 10]);
   if (n < 40) return "三十" + (n % 10 === 0 ? "" : kan[n % 10]);
-  return ""; // 年・月で 40以上は想定外
+  return ""; 
 }
 
 function getJapaneseDate(year, month) {
@@ -177,6 +178,21 @@ document.getElementById("downloadBtn").onclick = () => {
   a.href = canvas.toDataURL("image/png");
   a.download = fileName;
   a.click();
+};
+
+// 一括保存
+document.getElementById("downloadAllBtn").onclick = () => {
+  const year = getSelectedYear();
+  for (let m = 1; m <= totalMonths; m++) {
+    drawMonth(m, year);
+    setTimeout(() => {
+      const mm = m.toString().padStart(2,"0");
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = `KamiyashiroGoshuin${year}${mm}.png`;
+      a.click();
+    }, 200 * m); // 少し遅延を入れて順に生成
+  }
 };
 
 // 初期表示
