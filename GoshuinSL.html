@@ -32,6 +32,7 @@ canvas { border:2px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.4); backgroun
     X位置: <input type="range" id="posXSlider" min="0" max="512" value="50"><span id="posXLabel">50px</span>
     Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50"><span id="posYLabel">50px</span>
     <button id="downloadBtn">保存</button>
+    <button id="generateAllBtn">一括生成</button>
   </div>
   <canvas id="goshuinCanvas"></canvas>
 </div>
@@ -64,6 +65,7 @@ for(let m=1;m<=12;m++){
   monthSelect.appendChild(option);
 }
 
+// 漢数字変換
 const kan=["〇","一","二","三","四","五","六","七","八","九"];
 function numToKanji(n){
   if(n<=10) return n===10?"十":kan[n];
@@ -73,44 +75,92 @@ function numToKanji(n){
   return n.toString();
 }
 
+// 年号文字列
 function getJapaneseYearString(year){
   const y=year-2018;
   if(y===1) return "令和元年吉日";
   else return "令和"+numToKanji(y)+"年吉日";
 }
 
-function drawGoshuin(){
+// 描画関数
+function drawGoshuin(selectedMonth){
   const img=new Image();
-  img.crossOrigin="anonymous"; img.src=templateUrl;
-  img.onload=()=>{
-    canvas.width=img.width; canvas.height=img.height;
+  img.crossOrigin="anonymous";
+  img.src = templateUrl;
+  img.onload = ()=>{
+    canvas.width = img.width;
+    canvas.height = img.height;
     ctx.drawImage(img,0,0);
-    const text=getJapaneseYearString(parseInt(yearSelect.value,10));
-    const size=parseInt(fontSizeSlider.value,10);
-    const x=parseInt(posXSlider.value,10);
-    const y=parseInt(posYSlider.value,10);
-    ctx.font=`bold ${size}px 'KouzanBrush'`;
+
+    const text = getJapaneseYearString(parseInt(yearSelect.value,10));
+    const size = parseInt(fontSizeSlider.value,10);
+    const lh = size*1.15;
+    const x = parseInt(posXSlider.value,10);
+    const y = parseInt(posYSlider.value,10);
+
+    ctx.font = `bold ${size}px 'KouzanBrush'`;
     ctx.fillStyle="#000";
-    ctx.textAlign="center"; ctx.textBaseline="top";
-    const lh=size*1.15;
-    for(let i=0;i<text.length;i++) ctx.fillText(text[i],x,y+i*lh);
+    ctx.textAlign="center";
+    ctx.textBaseline="top";
+
+    for(let i=0;i<text.length;i++) ctx.fillText(text[i],x,y);
   };
 }
 
-yearSelect.onchange=drawGoshuin; monthSelect.onchange=drawGoshuin;
-fontSizeSlider.oninput=()=>{ fontSizeLabel.textContent=fontSizeSlider.value+"px"; drawGoshuin(); };
-posXSlider.oninput=()=>{ posXLabel.textContent=posXSlider.value+"px"; drawGoshuin(); };
-posYSlider.oninput=()=>{ posYLabel.textContent=posYSlider.value+"px"; drawGoshuin(); };
-
-document.getElementById("downloadBtn").onclick=()=>{
-  const mm=monthSelect.value.toString().padStart(2,"0");
-  const fileName=`KamiyashiroGoshuin${yearSelect.value}${mm}.png`;
-  const a=document.createElement("a");
-  a.href=canvas.toDataURL("image/png"); a.download=fileName; a.click();
+// 単月生成＆ダウンロード
+document.getElementById("downloadBtn").onclick = ()=>{
+  const mm = monthSelect.value.toString().padStart(2,"0");
+  const fileName = `KamiyashiroGoshuin${yearSelect.value}${mm}.png`;
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = fileName;
+  a.click();
 };
 
+// 一括生成（1月～12月）
+document.getElementById("generateAllBtn").onclick = () => {
+  const year = parseInt(yearSelect.value,10);
+  for(let month=1; month<=12; month++){
+    const img = new Image();
+    img.crossOrigin="anonymous";
+    img.src = templateUrl;
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img,0,0);
+
+      const text = getJapaneseYearString(year);
+      const size = parseInt(fontSizeSlider.value,10);
+      const lh = size*1.15;
+      const x = parseInt(posXSlider.value,10);
+      const y = parseInt(posYSlider.value,10);
+
+      ctx.font = `bold ${size}px 'KouzanBrush'`;
+      ctx.fillStyle="#000";
+      ctx.textAlign="center";
+      ctx.textBaseline="top";
+
+      for(let i=0;i<text.length;i++) ctx.fillText(text[i],x,y);
+
+      const mm = month.toString().padStart(2,"0");
+      const fileName = `KamiyashiroGoshuin${year}${mm}.png`;
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = fileName;
+      a.click();
+    };
+  }
+};
+
+// UIイベント
+yearSelect.onchange = drawGoshuin;
+monthSelect.onchange = drawGoshuin;
+fontSizeSlider.oninput = ()=>{ fontSizeLabel.textContent=fontSizeSlider.value+"px"; drawGoshuin(); };
+posXSlider.oninput = ()=>{ posXLabel.textContent=posXSlider.value+"px"; drawGoshuin(); };
+posYSlider.oninput = ()=>{ posYLabel.textContent=posYSlider.value+"px"; drawGoshuin(); };
+
+// 初期描画
 drawGoshuin();
 </script>
-
 </body>
 </html>
