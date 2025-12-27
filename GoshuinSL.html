@@ -182,10 +182,8 @@ function drawVertical(text, x, y, lh, correction=0) {
     let size = parseInt(ctx.font.match(/\d+/)[0]);
     ctx.font = ctx.font.replace(/\d+px/, (size+correction)+"px");
 
-    // 中塗り複数回
     for(let r=0; r<repeat; r++) ctx.fillText(ch, x, y + i*lh);
 
-    // 外周線
     if(strokeSwitch.checked) ctx.strokeText(ch, x, y + i*lh);
 
     ctx.font = ctx.font.replace(/\d+px/, size+"px");
@@ -220,7 +218,8 @@ function drawMonth(month, year) {
 
       drawVertical(dateStr, x, y, lh, correction);
 
-      resolve();
+      // 小さく待機して描画確定
+      setTimeout(resolve,50);
     };
     img.onerror = () => { console.error("テンプレート画像読み込み失敗"); resolve(); };
   });
@@ -255,16 +254,15 @@ document.getElementById("downloadBtn").onclick = async () => {
   a.click();
 };
 
-// 一括 ZIP（非同期で順番に生成）
+// 一括 ZIP（安定版）
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
   for(let m=1;m<=totalMonths;m++){
-    await drawMonth(m,year); // 描画完了まで待つ
+    await drawMonth(m,year);
     const dataURL = canvas.toDataURL("image/png");
     const base64 = dataURL.split(",")[1];
-    const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
-    zip.file(filename, base64, {base64:true});
+    zip.file(`KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`, base64, {base64:true});
   }
   const content = await zip.generateAsync({type:"blob"});
   saveAs(content, `KamiyashiroGoshuin${year}.zip`);
@@ -304,7 +302,6 @@ document.getElementById("importSettingsInput").onchange = e=>{
     posXSlider.value = s.posX;
     posYSlider.value = s.posY;
 
-    // ラベル更新
     controls.forEach(([slider,label,suffix])=>{ label.textContent = slider.value+suffix; });
     drawMonth(currentMonth,getSelectedYear());
   };
