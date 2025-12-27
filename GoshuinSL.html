@@ -95,7 +95,7 @@ canvas {
 <script>
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = true;
 const templateUrl = "KamiyashiroGoshuinSL.png";
 let currentMonth = 1;
 const totalMonths = 12;
@@ -142,11 +142,10 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-// 縦書き描画（ヒゲ防止：fill2回）
+// 縦書き描画（九も他文字も1回描画のみ）
 function drawVertical(text, x, y, lh) {
   for (let i = 0; i < text.length; i++) {
-    ctx.fillText(text[i], x, y + i * lh);
-    ctx.fillText(text[i], x+0.5, y + i * lh); // 横に0.5pxずらして濃さ補強
+    ctx.fillText(text[i], x, y + i*lh);
   }
 }
 
@@ -171,7 +170,7 @@ function drawMonth(month, year) {
       ctx.fillStyle = "#111";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.shadowBlur = 0; // ヒゲ防止のため影はなし
+      ctx.shadowBlur = 0;
 
       drawVertical(dateStr, x, y, lh);
       resolve();
