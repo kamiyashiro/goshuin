@@ -88,7 +88,7 @@ canvas {
     X位置: <input type="range" id="posXSlider" min="0" max="512" value="50"><span id="posXLabel">50px</span>
     Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50"><span id="posYLabel">50px</span>
     保存: <button id="downloadBtn">保存</button>
-    一括ZIP: <button id="downloadAllBtn">12ヶ月分全て保存</button>
+    一括ZIP: <button id="downloadAllBtn">全て保存</button>
   </div>
 
   <!-- 2行目：文字効果調整 -->
@@ -190,7 +190,14 @@ function drawVertical(text, x, y, lh, correction=0) {
   }
 }
 
-// 画像ロードと描画を Promise 化（確実にresolve）
+// canvas.toBlob を Promise 化
+function canvasToBlobAsync(canvas){
+  return new Promise(resolve=>{
+    canvas.toBlob(blob=>resolve(blob));
+  });
+}
+
+// 画像ロードと描画を Promise 化
 function drawMonth(month, year) {
   return new Promise(resolve => {
     const img = new Image();
@@ -254,17 +261,16 @@ document.getElementById("downloadBtn").onclick = async () => {
   a.click();
 };
 
-// 一括 ZIP（完全非同期・順次処理）
+// 一括 ZIP（新安定版）
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
 
   for(let m=1;m<=totalMonths;m++){
-    await drawMonth(m,year);                 // 描画完了待ち
-    await new Promise(r => requestAnimationFrame(r)); // 次フレーム待機
-    const dataURL = canvas.toDataURL("image/png");
-    const base64 = dataURL.split(",")[1];
-    zip.file(`KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`, base64, {base64:true});
+    await drawMonth(m,year);
+    await new Promise(r=>requestAnimationFrame(r)); // 描画反映待ち
+    const blob = await canvasToBlobAsync(canvas);     // Blob取得
+    zip.file(`KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`, blob);
   }
 
   const content = await zip.generateAsync({type:"blob"});
