@@ -76,13 +76,13 @@ canvas {
     年: <select id="yearSelect"></select>
     文字サイズ: <input type="range" id="fontSizeSlider" min="8" max="80" value="38">
     <span id="fontSizeLabel">38px</span>
-    補正: <input type="range" id="textCorrectionSlider" min="-5" max="5" value="0">
-    <span id="textCorrectionLabel">0px</span>
-    アンチエイリアス: <input type="checkbox" id="aaSwitch" checked>
+    中塗り濃さ: <input type="range" id="fillOpacitySlider" min="10" max="100" value="100">
+    <span id="fillOpacityLabel">100%</span>
     X位置: <input type="range" id="posXSlider" min="0" max="512" value="50">
     <span id="posXLabel">50px</span>
     Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50">
     <span id="posYLabel">50px</span>
+    アンチエイリアス: <input type="checkbox" id="aaSwitch" checked>
     <button id="prevMonthBtn">前月</button>
     <button id="nextMonthBtn">次月</button>
     <button id="downloadBtn">保存</button>
@@ -101,18 +101,18 @@ const templateUrl = "KamiyashiroGoshuinSL.png";
 let currentMonth = 1;
 const totalMonths = 12;
 
-// スライダ要素
+// UI 要素
 const fontSizeSlider = document.getElementById("fontSizeSlider");
 const fontSizeLabel = document.getElementById("fontSizeLabel");
-const textCorrectionSlider = document.getElementById("textCorrectionSlider");
-const textCorrectionLabel = document.getElementById("textCorrectionLabel");
+const fillOpacitySlider = document.getElementById("fillOpacitySlider");
+const fillOpacityLabel = document.getElementById("fillOpacityLabel");
 const posXSlider = document.getElementById("posXSlider");
 const posYSlider = document.getElementById("posYSlider");
 const posXLabel = document.getElementById("posXLabel");
 const posYLabel = document.getElementById("posYLabel");
 const aaSwitch = document.getElementById("aaSwitch");
-
 const yearSelect = document.getElementById("yearSelect");
+
 const nowYear = new Date().getFullYear();
 for (let y = nowYear - 4; y <= nowYear + 5; y++) {
   const option = document.createElement("option");
@@ -140,20 +140,17 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-// 全文字描画（中塗り＋オプションで線も）
+// 文字描画（中塗り濃さ調整）
 function drawVertical(text, x, y, lh, correction=0) {
+  const opacity = parseInt(fillOpacitySlider.value, 10) / 100;
+  ctx.fillStyle = `rgba(0,0,0,${opacity})`;
+
   for (let i = 0; i < text.length; i++) {
     let ch = text[i];
     let size = parseInt(ctx.font.match(/\d+/)[0]);
     ctx.font = ctx.font.replace(/\d+px/, (size + correction) + "px");
-
-    // 中塗り
-    ctx.fillText(ch, x, y + i * lh);
-
-    // 外縁も必要ならここで strokeText 追加可能
-    // ctx.strokeText(ch, x, y + i * lh);
-
-    ctx.font = ctx.font.replace(/\d+px/, size + "px"); // 元に戻す
+    ctx.fillText(ch, x, y + i * lh); // 中塗り
+    ctx.font = ctx.font.replace(/\d+px/, size + "px");
   }
 }
 
@@ -170,29 +167,27 @@ async function drawMonth(month, year) {
 
       ctx.imageSmoothingEnabled = aaSwitch.checked;
 
-      const dateStr = getJapaneseDate(year, month);
       let size = parseInt(fontSizeSlider.value, 10);
       if(size > 60) size = 60;
       const lh = size * 1.15;
       const x = parseInt(posXSlider.value, 10);
       const y = parseInt(posYSlider.value, 10);
-      const correction = parseInt(textCorrectionSlider.value,10);
 
       ctx.font = `bold ${size}px 'KouzanBrush'`;
-      ctx.fillStyle = "#000";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.shadowBlur = 0;
 
-      drawVertical(dateStr, x, y, lh, correction);
+      const dateStr = getJapaneseDate(year, month);
+      drawVertical(dateStr, x, y, lh);
       resolve();
     };
   });
 }
 
-// スライダ・チェック反映
+// UI イベント
 fontSizeSlider.oninput = () => { fontSizeLabel.textContent = fontSizeSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
-textCorrectionSlider.oninput = () => { textCorrectionLabel.textContent = textCorrectionSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
+fillOpacitySlider.oninput = () => { fillOpacityLabel.textContent = fillOpacitySlider.value + "%"; drawMonth(currentMonth, getSelectedYear()); };
 posXSlider.oninput = () => { posXLabel.textContent = posXSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 posYSlider.oninput = () => { posYLabel.textContent = posYSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
 aaSwitch.onchange = () => drawMonth(currentMonth, getSelectedYear());
@@ -214,19 +209,17 @@ document.getElementById("downloadBtn").onclick = async () => {
   a.click();
 };
 
-// 一括 ZIP
+// 一括 ZIP 保存
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
-
   for (let m = 1; m <= totalMonths; m++) {
     await drawMonth(m, year);
     const dataURL = canvas.toDataURL("image/png");
     const base64 = dataURL.split(",")[1];
     const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
-    zip.file(filename, base64, {base64: true});
+    zip.file(filename, base64, {base64:true});
   }
-
   const content = await zip.generateAsync({type:"blob"});
   saveAs(content, `KamiyashiroGoshuin${year}.zip`);
 };
@@ -234,6 +227,5 @@ document.getElementById("downloadAllBtn").onclick = async () => {
 // 初期表示
 drawMonth(currentMonth, getSelectedYear());
 </script>
-
 </body>
 </html>
