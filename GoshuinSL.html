@@ -218,8 +218,8 @@ function drawMonth(month, year) {
 
       drawVertical(dateStr, x, y, lh, correction);
 
-      // 小さく待機して描画確定
-      setTimeout(resolve,50);
+      // 安定のため500ms待機して描画確定
+      setTimeout(resolve,500);
     };
     img.onerror = () => { console.error("テンプレート画像読み込み失敗"); resolve(); };
   });
@@ -254,16 +254,19 @@ document.getElementById("downloadBtn").onclick = async () => {
   a.click();
 };
 
-// 一括 ZIP（安定版）
+// 一括 ZIP（500ms待機で安定版）
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
+
   for(let m=1;m<=totalMonths;m++){
-    await drawMonth(m,year);
+    await drawMonth(m,year);                // 描画完了待ち
+    await new Promise(r => setTimeout(r, 500)); // 安定のため500ms待機
     const dataURL = canvas.toDataURL("image/png");
     const base64 = dataURL.split(",")[1];
     zip.file(`KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`, base64, {base64:true});
   }
+
   const content = await zip.generateAsync({type:"blob"});
   saveAs(content, `KamiyashiroGoshuin${year}.zip`);
 };
