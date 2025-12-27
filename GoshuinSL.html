@@ -88,11 +88,18 @@ function numToKanji(n){
   return str;
 }
 
-function getJapaneseDateString(year, month){
-  const y = year-2018;
-  const yearStr = "令和" + (y===1?"元":String(y).split("").map(n=>kan[n]).join("")) + "年";
+function getJapaneseDateString(year, month, day){
+  // 年号
+  const y = year - 2018;
+  let yearStr = "令和";
+  if(y===1) yearStr += "元";
+  else yearStr += String(y).split("").map(n => kan[parseInt(n,10)]).join("");
+  yearStr += "年";
+
   const monthStr = numToKanji(month) + "月";
-  return yearStr + monthStr + "吉日";
+  const dayStr = numToKanji(day) + "日";
+
+  return yearStr + monthStr + dayStr + "吉日";
 }
 
 function drawVertical(text, x, y, lh){ for(let i=0;i<text.length;i++) ctx.fillText(text[i], x, y+i*lh); }
@@ -106,7 +113,7 @@ function drawMonth(month, year){
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0);
 
-    const dateStr = getJapaneseDateString(year, month);
+    const dateStr = getJapaneseDateString(year, month, 1); // 日は1日固定
     const size = parseInt(fontSizeSlider.value,10);
     const lh = size*1.15;
     const x = parseInt(posXSlider.value,10);
@@ -142,7 +149,7 @@ document.getElementById("generateAllBtn").onclick = () => {
       canvas.height = img.height;
       ctx.drawImage(img,0,0);
 
-      const dateStr = getJapaneseDateString(getSelectedYear(),month);
+      const dateStr = getJapaneseDateString(getSelectedYear(),month,1);
       const size = parseInt(fontSizeSlider.value,10);
       const lh = size*1.15;
       const x = parseInt(posXSlider.value,10);
