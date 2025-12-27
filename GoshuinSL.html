@@ -91,6 +91,7 @@ canvas {
 <script>
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false; // 細かい線をくっきり
 const templateUrl = "KamiyashiroGoshuinSL.png";
 let currentMonth = 1;
 const totalMonths = 12;
@@ -150,6 +151,7 @@ function drawMonth(month, year) {
   img.onload = () => {
     canvas.width = img.width;
     canvas.height = img.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0);
 
     const dateStr = getJapaneseDate(year, month);
@@ -162,7 +164,11 @@ function drawMonth(month, year) {
     ctx.fillStyle = "#111";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    drawVertical(dateStr, x, y, lh);
+    ctx.shadowColor = "#111";
+    ctx.shadowBlur = 1;
+
+    // 文字を2回描画して濃くする
+    for (let n = 0; n < 2; n++) drawVertical(dateStr, x, y, lh);
   };
 }
 
