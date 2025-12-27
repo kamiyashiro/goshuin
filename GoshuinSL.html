@@ -46,13 +46,12 @@ body {
   gap: 10px;
 }
 
-button {
-  padding: 8px 14px;
+select, button {
+  padding: 6px 12px;
   font-size: 14px;
   cursor: pointer;
-  background: rgba(245,245,245,0.95);
-  border: 2px solid #333;
   border-radius: 6px;
+  border: 2px solid #333;
   font-weight: bold;
 }
 
@@ -73,6 +72,7 @@ canvas {
 
 <div id="wrap">
   <div class="controls">
+    <select id="yearSelect"></select>
     <button id="prevMonthBtn">前月</button>
     <button id="nextMonthBtn">次月</button>
     <button id="downloadBtn">保存</button>
@@ -84,22 +84,38 @@ canvas {
 <script>
 const canvas = document.getElementById("goshuinCanvas");
 const ctx = canvas.getContext("2d");
-
 const templateUrl = "KamiyashiroGoshuinSL.png";
+
 let currentMonth = 1;
 const totalMonths = 12;
-const year = new Date().getFullYear(); // 西暦
+
+// 年ドロップダウン生成
+const yearSelect = document.getElementById("yearSelect");
+const nowYear = new Date().getFullYear();
+for (let y = nowYear - 4; y <= nowYear + 5; y++) {
+  const option = document.createElement("option");
+  option.value = y;
+  option.textContent = y + "年";
+  if (y === nowYear) option.selected = true;
+  yearSelect.appendChild(option);
+}
+
+// 選択年取得
+function getSelectedYear() {
+  return parseInt(yearSelect.value, 10);
+}
 
 // 漢数字
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
 
-// 日付文字列生成
+// 和暦文字列生成
 function getJapaneseDateString(year, month) {
-  let y = year - 2018;
-  let yearStr = "令和";
-  yearStr += (y === 1 ? "元" : String(y).split("").map(n => kan[n]).join("")) + "年";
+  const y = year - 2018;
+  const yearStr = "令和" + (y === 1 ? "元" : String(y).split("").map(n => kan[n]).join("")) + "年";
 
-  let monthStr = month <= 10 ? kan[month] : "十" + (month - 10 === 0 ? "" : kan[month - 10]);
+  let monthStr;
+  if (month <= 10) monthStr = kan[month];
+  else monthStr = "十" + (month-10 === 0 ? "" : kan[month-10]);
   monthStr += "月";
 
   return yearStr + monthStr + "吉日";
@@ -112,8 +128,8 @@ function drawVertical(text, x, y, lh) {
   }
 }
 
-// 月単位描画
-function drawMonth(month) {
+// 月描画
+function drawMonth(month, year) {
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = templateUrl;
@@ -138,27 +154,30 @@ function drawMonth(month) {
   };
 }
 
-// 現在月切替
+// 前後月ボタン
 document.getElementById("prevMonthBtn").onclick = () => {
   currentMonth = currentMonth > 1 ? currentMonth - 1 : totalMonths;
-  drawMonth(currentMonth);
+  drawMonth(currentMonth, getSelectedYear());
 };
 document.getElementById("nextMonthBtn").onclick = () => {
   currentMonth = currentMonth < totalMonths ? currentMonth + 1 : 1;
-  drawMonth(currentMonth);
+  drawMonth(currentMonth, getSelectedYear());
 };
 
-// 現在月ダウンロード
+// 年選択時再描画
+yearSelect.onchange = () => drawMonth(currentMonth, getSelectedYear());
+
+// 現在月DL
 document.getElementById("downloadBtn").onclick = () => {
   const mm = currentMonth.toString().padStart(2,"0");
-  const fileName = `KamiyashiroGoshuin${year}${mm}.png`;
+  const fileName = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
   const a = document.createElement("a");
   a.href = canvas.toDataURL("image/png");
   a.download = fileName;
   a.click();
 };
 
-// 一括生成＆DL（12ヶ月）
+// 一括生成＆DL
 document.getElementById("generateAllBtn").onclick = () => {
   for (let month = 1; month <= 12; month++) {
     const img = new Image();
@@ -170,7 +189,7 @@ document.getElementById("generateAllBtn").onclick = () => {
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
 
-      const dateStr = getJapaneseDateString(year, month);
+      const dateStr = getJapaneseDateString(getSelectedYear(), month);
       const size = Math.floor((canvas.width / 16) * 1.5);
       const lh = size * 1.15;
       const x = size * 1.2;
@@ -183,9 +202,8 @@ document.getElementById("generateAllBtn").onclick = () => {
 
       drawVertical(dateStr, x, y, lh);
 
-      // ダウンロード
       const mm = month.toString().padStart(2,"0");
-      const fileName = `KamiyashiroGoshuin${year}${mm}.png`;
+      const fileName = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
       const a = document.createElement("a");
       a.href = canvas.toDataURL("image/png");
       a.download = fileName;
@@ -195,7 +213,7 @@ document.getElementById("generateAllBtn").onclick = () => {
 };
 
 // 初期表示
-drawMonth(currentMonth);
+drawMonth(currentMonth, getSelectedYear());
 </script>
 
 </body>
