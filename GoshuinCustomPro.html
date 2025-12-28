@@ -84,11 +84,11 @@ button.big-btn:hover { background: #b00000; }
    <button id="nextMonthBtn">次月 ▶</button>
   </div>
   <div class="controls-row">
-   <label>X位置:</label> <input type="range" id="dateX" min="0" max="512" value="256"><span id="dateXVal">256</span>
-   <label>Y位置:</label> <input type="range" id="dateY" min="0" max="512" value="200"><span id="dateYVal">200</span>
+   <label>X位置:</label> <input type="range" id="dateX" min="0" max="512" value="72"><span id="dateXVal">72</span>
+   <label>Y位置:</label> <input type="range" id="dateY" min="0" max="512" value="36"><span id="dateYVal">36</span>
   </div>
   <div class="controls-row">
-   <label>サイズ:</label> <input type="range" id="dateSize" min="20" max="80" value="40"><span id="dateSizeVal">40</span>
+   <label>サイズ:</label> <input type="range" id="dateSize" min="20" max="80" value="36"><span id="dateSizeVal">36</span>
    <label>補正:</label> <input type="range" id="dateCorrection" min="-10" max="10" value="0"><span id="dateCorrectionVal">0</span>
   </div>
   <div class="controls-row">
@@ -96,7 +96,7 @@ button.big-btn:hover { background: #b00000; }
    <label>重ね回数:</label> <input type="range" id="dateRepeat" min="1" max="8" value="4"><span id="dateRepeatVal">4</span>
   </div>
   <div class="controls-row">
-   <label>外周線:</label> <input type="checkbox" id="dateStroke" checked>
+   <label>外周線:</label> <input type="checkbox" id="dateStroke">
    <label>外周太さ:</label> <input type="range" id="dateStrokeWidth" min="1" max="10" value="2"><span id="dateStrokeWidthVal">2</span>
   </div>
  </div>
@@ -117,11 +117,11 @@ button.big-btn:hover { background: #b00000; }
    </select>
   </div>
   <div class="controls-row">
-   <label>X位置:</label> <input type="range" id="hoheiX" min="0" max="512" value="100"><span id="hoheiXVal">100</span>
-   <label>Y位置:</label> <input type="range" id="hoheiY" min="0" max="512" value="400"><span id="hoheiYVal">400</span>
+   <label>X位置:</label> <input type="range" id="hoheiX" min="0" max="512" value="457"><span id="hoheiXVal">457</span>
+   <label>Y位置:</label> <input type="range" id="hoheiY" min="0" max="512" value="46"><span id="hoheiYVal">46</span>
   </div>
   <div class="controls-row">
-   <label>サイズ:</label> <input type="range" id="hoheiSize" min="20" max="80" value="35"><span id="hoheiSizeVal">35</span>
+   <label>サイズ:</label> <input type="range" id="hoheiSize" min="20" max="80" value="75"><span id="hoheiSizeVal">75</span>
   </div>
   <div class="controls-row">
    <label>中塗り濃さ:</label> <input type="range" id="hoheiOpacity" min="10" max="100" value="100"><span id="hoheiOpacityVal">100%</span>
@@ -133,13 +133,12 @@ button.big-btn:hover { background: #b00000; }
  <div id="jinja" class="tab-content">
   <div class="controls-row"><label>表示:</label> <input type="checkbox" id="jinjaEnabled" checked></div>
   <div class="controls-row">
-   <label>神社名:</label> <input type="text" id="jinjaText" value="" size="20">
+   <label>神社名:</label> <input type="text" id="jinjaText" value="神社名" size="20">
    <label>色:</label> <select id="jinjaColor">
-    <option value="#000000">黒</option>
+    <option value="#000000" selected>黒</option>
     <option value="#d40000">赤</option>
    </select>
   </div>
-  <!-- 新規追加：ファイルプリフィックス入力 -->
   <div class="controls-row">
    <label>File Prefix:</label> 
    <input type="text" id="filePrefix" value="" size="20" placeholder="例: MyShrine">
@@ -159,11 +158,11 @@ button.big-btn:hover { background: #b00000; }
    </select>
   </div>
   <div class="controls-row">
-   <label>X位置:</label> <input type="range" id="jinjaX" min="0" max="512" value="256"><span id="jinjaXVal">256</span>
-   <label>Y位置:</label> <input type="range" id="jinjaY" min="0" max="512" value="100"><span id="jinjaYVal">100</span>
+   <label>X位置:</label> <input type="range" id="jinjaX" min="0" max="512" value="258"><span id="jinjaXVal">258</span>
+   <label>Y位置:</label> <input type="range" id="jinjaY" min="0" max="512" value="50"><span id="jinjaYVal">50</span>
   </div>
   <div class="controls-row">
-   <label>サイズ:</label> <input type="range" id="jinjaSize" min="20" max="80" value="50"><span id="jinjaSizeVal">50</span>
+   <label>サイズ:</label> <input type="range" id="jinjaSize" min="20" max="80" value="80"><span id="jinjaSizeVal">80</span>
   </div>
   <div class="controls-row">
    <label>中塗り濃さ:</label> <input type="range" id="jinjaOpacity" min="10" max="100" value="100"><span id="jinjaOpacityVal">100%</span>
@@ -177,437 +176,3 @@ button.big-btn:hover { background: #b00000; }
   <p>朱印画像アップロード (透過PNG推奨)</p>
   <input type="file" id="stampUpload" accept="image/*" style="padding:10px;font-size:16px;">
   <div class="controls-row">
-   <label>サイズ:</label> <input type="range" id="stampSize" min="50" max="300" value="150"><span id="stampSizeVal">150</span>
-   <label>回転:</label> <input type="range" id="stampRotate" min="-180" max="180" value="0"><span id="stampRotateVal">0°</span>
-   <label>重ね順:</label> <select id="stampLayer">
-    <option value="top">最上</option>
-    <option value="bottom">背景の上</option>
-   </select>
-  </div>
-  <p>キャンバス上でクリック＆ドラッグして位置調整してください</p>
- </div>
-
- <div id="imageSave" class="tab-content">
-  <h2 style="color:#d40000; margin-bottom:30px;">御朱印画像の保存</h2>
-  <button class="big-btn" id="downloadBtn">単体保存 (現在の月)</button>
-  <button class="big-btn" id="downloadAllBtn">12ヶ月一括 ZIP保存</button>
- </div>
-
- <div id="configSave" class="tab-content">
-  <h2 style="color:#d40000; margin-bottom:30px;">設定の保存・読み込み</h2>
-  <button class="big-btn" id="saveSettingsBtn">設定保存 (JSONファイル)</button>
-  <button class="big-btn" onclick="document.getElementById('loadSettingsUpload').click();">設定読み込み (JSONファイル)</button>
-  <input type="file" id="loadSettingsUpload" accept=".json" style="display:none;">
- </div>
-
- <canvas id="goshuinCanvas" width="512" height="512"></canvas>
- <div id="version">Goshuin Custom Pro - Final Edition ♡ 2025.12.29 完璧に完成しました！</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-<script>
-const canvas = document.getElementById('goshuinCanvas');
-const ctx = canvas.getContext('2d');
-let currentMonth = 1;
-let templates = [];
-let selectedTemplate = null;
-let stampImage = null;
-let stampX = 256, stampY = 256, stampSize = 150, stampRotate = 0, stampLayer = 'top';
-let dateFont = 'KouzanBrushFont';
-let hoheiFont = 'KouzanBrushFont';
-let jinjaFont = 'KouzanBrushFont';
-let dateX = 256, dateY = 200;
-let hoheiX = 100, hoheiY = 400;
-let jinjaX = 256, jinjaY = 100;
-let filePrefix = ''; // 新規追加：ファイルプリフィックス
-
-// ASCIIのみ許可（入力時にチェック）
-document.getElementById('filePrefix').oninput = function() {
-  let value = this.value;
-  // ASCII範囲外の文字を削除
-  value = value.replace(/[^\x20-\x7E]/g, '');
-  this.value = value;
-  filePrefix = value || 'Nameless Shrine';
-};
-
-// タブ切り替え
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-    drawAll();
-  };
-});
-
-// 背景管理（変更なし）
-document.getElementById('templateUpload').onchange = e => {
-  Array.from(e.target.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const id = Date.now() + Math.random();
-      const template = {id, dataURL: ev.target.result};
-      templates.push(template);
-      renderTemplateList();
-      if (!selectedTemplate) selectTemplate(template);
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
-function renderTemplateList() {
-  const list = document.getElementById('template-list');
-  list.innerHTML = '';
-  templates.forEach(t => {
-    const div = document.createElement('div');
-    div.className = 'template-thumb' + (selectedTemplate && selectedTemplate.id === t.id ? ' selected' : '');
-    div.innerHTML = `<img src="${t.dataURL}"><button class="delete-btn">×</button>`;
-    div.onclick = e => {
-      if (e.target.className === 'delete-btn') {
-        e.stopPropagation();
-        templates = templates.filter(tt => tt.id !== t.id);
-        if (selectedTemplate && selectedTemplate.id === t.id) selectedTemplate = null;
-        renderTemplateList();
-        drawAll();
-      } else {
-        selectTemplate(t);
-      }
-    };
-    list.appendChild(div);
-  });
-}
-
-function selectTemplate(t) {
-  selectedTemplate = t;
-  renderTemplateList();
-  drawAll();
-}
-
-// 朱印
-document.getElementById('stampUpload').onchange = e => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => { stampImage = img; drawAll(); };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-// すべてのrangeスライダー（朱印サイズ・回転もリアルタイム反映）
-document.querySelectorAll('input[type="range"]').forEach(slider => {
-  const valSpan = document.getElementById(slider.id + 'Val');
-  slider.oninput = () => {
-    if (valSpan) {
-      valSpan.textContent = slider.value + (slider.id.includes('Opacity') ? '%' : slider.id.includes('Rotate') ? '°' : '');
-    }
-    if (slider.id === 'stampSize') stampSize = +slider.value;
-    if (slider.id === 'stampRotate') stampRotate = +slider.value;
-    updatePositionsFromSliders();
-    drawAll();
-  };
-});
-
-// その他のイベント
-document.querySelectorAll('input[type="checkbox"], input[type="text"], select').forEach(el => {
-  if (!el.id.includes('FontCustom') && el.id !== 'filePrefix') el.onchange = drawAll;
-});
-document.getElementById('filePrefix').onchange = () => { filePrefix = document.getElementById('filePrefix').value || 'Nameless Shrine'; };
-
-document.getElementById('stampLayer').onchange = () => { stampLayer = document.getElementById('stampLayer').value; drawAll(); };
-
-// カスタムフォント
-function setCustomFont(type) {
-  const input = document.getElementById(type + 'FontCustom');
-  if (input.value.trim()) {
-    if (type === 'date') dateFont = input.value.trim();
-    if (type === 'hohei') hoheiFont = input.value.trim();
-    if (type === 'jinja') jinjaFont = input.value.trim();
-    drawAll();
-  }
-}
-
-// 年選択
-const yearSelect = document.getElementById('yearSelect');
-const currentYear = new Date().getFullYear();
-const maxYear = 2075;
-for (let y = currentYear; y <= maxYear; y++) {
-  const opt = document.createElement('option');
-  opt.value = y;
-  opt.textContent = y + '年';
-  if (y === currentYear) opt.selected = true;
-  yearSelect.appendChild(opt);
-}
-yearSelect.onchange = drawAll;
-
-document.getElementById('prevMonthBtn').onclick = () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; drawAll(); };
-document.getElementById('nextMonthBtn').onclick = () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; drawAll(); };
-
-// 漢数字変換
-const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-const juu = ["十", "二十", "三十", "四十", "五十", "六十", "七十", "八十", "九十"];
-
-function toKanji(n) {
-  if (n === 0) return "〇";
-  if (n <= 9) return kan[n];
-  const tens = Math.floor(n / 10);
-  const ones = n % 10;
-  return (tens > 0 ? juu[tens - 1] : "") + (ones > 0 ? kan[ones] : "");
-}
-
-function getJapaneseDate(year, month) {
-  const reiwaYear = year - 2018;
-  const yearStr = reiwaYear === 1 ? "令和元年" : "令和" + toKanji(reiwaYear) + "年";
-  return yearStr + toKanji(month) + "月吉日";
-}
-
-// 描画関数（変更なし）
-function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont') {
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillStyle = color;
-  ctx.globalAlpha = opacity / 100;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = strokeWidth;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const curSize = size + correction;
-    ctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
-    for (let r = 0; r < repeat; r++) ctx.fillText(ch, x, y + i * size * 1.15);
-    if (stroke) ctx.strokeText(ch, x, y + i * size * 1.15);
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawStamp(x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(stampRotate * Math.PI / 180);
-  ctx.drawImage(stampImage, -stampSize / 2, -stampSize / 2, stampSize, stampSize);
-  ctx.restore();
-}
-
-function drawAll() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (selectedTemplate) {
-    const img = new Image();
-    img.src = selectedTemplate.dataURL;
-    img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); };
-    if (img.complete && img.naturalHeight !== 0) { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); }
-    return;
-  }
-  drawRest();
-}
-
-function drawRest() {
-  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'bottom') {
-    ctx.globalCompositeOperation = 'multiply';
-    drawStamp(stampX, stampY);
-    ctx.globalCompositeOperation = 'source-over';
-  }
-  if (document.getElementById('dateEnabled').checked) {
-    const dateStr = getJapaneseDate(+yearSelect.value, currentMonth);
-    drawVertical(dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
-      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
-      +document.getElementById('dateCorrection').value, '#000', dateFont);
-  }
-  if (document.getElementById('hoheiEnabled').checked) {
-    drawVertical('奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
-      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont);
-  }
-  if (document.getElementById('jinjaEnabled').checked) {
-    const color = document.getElementById('jinjaColor').value;
-    drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
-      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
-      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont);
-  }
-  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'top') {
-    ctx.globalCompositeOperation = 'multiply';
-    drawStamp(stampX, stampY);
-    ctx.globalCompositeOperation = 'source-over';
-  }
-}
-
-// 位置更新
-function updatePositionsFromSliders() {
-  dateX = +document.getElementById('dateX').value;
-  dateY = +document.getElementById('dateY').value;
-  hoheiX = +document.getElementById('hoheiX').value;
-  hoheiY = +document.getElementById('hoheiY').value;
-  jinjaX = +document.getElementById('jinjaX').value;
-  jinjaY = +document.getElementById('jinjaY').value;
-}
-function updateSlidersFromPositions() {
-  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
-  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
-  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
-  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
-  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
-  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
-}
-
-// ドラッグ（変更なし）
-let dragging = null;
-let offsetX = 0, offsetY = 0;
-canvas.onmousedown = e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  if (document.getElementById('dateEnabled').checked && hitTest(mx, my, dateX, dateY, getTextBounds('date'))) dragging = 'date';
-  else if (document.getElementById('hoheiEnabled').checked && hitTest(mx, my, hoheiX, hoheiY, getTextBounds('hohei'))) dragging = 'hohei';
-  else if (document.getElementById('jinjaEnabled').checked && hitTest(mx, my, jinjaX, jinjaY, getTextBounds('jinja'))) dragging = 'jinja';
-  else if (stampImage && document.getElementById('stampEnabled').checked && Math.hypot(mx - stampX, my - stampY) < stampSize / 2) dragging = 'stamp';
-  if (dragging) {
-    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : dragging === 'jinja' ? jinjaX : stampX);
-    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : dragging === 'jinja' ? jinjaY : stampY);
-  }
-};
-canvas.onmousemove = e => {
-  if (!dragging) return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  const nx = mx - offsetX;
-  const ny = my - offsetY;
-  if (dragging === 'date') { dateX = nx; dateY = ny; }
-  else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
-  else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
-  else if (dragging === 'stamp') { stampX = nx; stampY = ny; }
-  updateSlidersFromPositions();
-  drawAll();
-};
-canvas.onmouseup = canvas.onmouseleave = () => { dragging = null; };
-
-function hitTest(mx, my, x, y, bounds) {
-  return mx >= x - bounds.width / 2 && mx <= x + bounds.width / 2 && my >= y && my <= y + bounds.height;
-}
-function getTextBounds(type) {
-  let text, size, font = dateFont;
-  if (type === 'date') { text = getJapaneseDate(+yearSelect.value, currentMonth); size = +document.getElementById('dateSize').value; font = dateFont; }
-  else if (type === 'hohei') { text = '奉拝'; size = +document.getElementById('hoheiSize').value; font = hoheiFont; }
-  else if (type === 'jinja') { text = document.getElementById('jinjaText').value || ' '; size = +document.getElementById('jinjaSize').value; font = jinjaFont; }
-  ctx.font = `bold ${size}px "${font}", 'Yuji Syuku', sans-serif`;
-  const width = Math.max(...[...text].map(ch => ctx.measureText(ch).width));
-  const height = text.length * size * 1.15;
-  return {width, height};
-}
-
-// 画像保存（プリフィックス対応）
-document.getElementById('downloadBtn').onclick = () => {
-  const prefix = filePrefix || 'Nameless Shrine';
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `${prefix}_${yearSelect.value}_${currentMonth.toString().padStart(2,'0')}.png`;
-  a.click();
-};
-
-document.getElementById('downloadAllBtn').onclick = async () => {
-  const prefix = filePrefix || 'Nameless Shrine';
-  const zip = new JSZip();
-  const year = +yearSelect.value;
-  const btn = document.getElementById('downloadAllBtn');
-  btn.disabled = true; btn.textContent = "生成中...";
-  for (let m = 1; m <= 12; m++) {
-    currentMonth = m;
-    drawAll();
-    await new Promise(r => setTimeout(r, 200));
-    const dataURL = canvas.toDataURL('image/png');
-    zip.file(`${prefix}_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
-    btn.textContent = `生成中... (${m}/12)`;
-  }
-  saveAs(await zip.generateAsync({type:"blob"}), `${prefix}_${year}_All.zip`);
-  btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
-};
-
-// 設定保存・読み込み（filePrefixも追加）
-document.getElementById('saveSettingsBtn').onclick = () => {
-  const settings = {
-    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
-    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
-    date: { enabled: document.getElementById('dateEnabled').checked, font: dateFont, x: dateX, y: dateY, size: +document.getElementById('dateSize').value, correction: +document.getElementById('dateCorrection').value, opacity: +document.getElementById('dateOpacity').value, repeat: +document.getElementById('dateRepeat').value, stroke: document.getElementById('dateStroke').checked, strokeWidth: +document.getElementById('dateStrokeWidth').value },
-    hohei: { enabled: document.getElementById('hoheiEnabled').checked, font: hoheiFont, x: hoheiX, y: hoheiY, size: +document.getElementById('hoheiSize').value, opacity: +document.getElementById('hoheiOpacity').value, repeat: +document.getElementById('hoheiRepeat').value, stroke: document.getElementById('hoheiStroke').checked },
-    jinja: { enabled: document.getElementById('jinjaEnabled').checked, text: document.getElementById('jinjaText').value, color: document.getElementById('jinjaColor').value, font: jinjaFont, x: jinjaX, y: jinjaY, size: +document.getElementById('jinjaSize').value, opacity: +document.getElementById('jinjaOpacity').value, repeat: +document.getElementById('jinjaRepeat').value, stroke: document.getElementById('jinjaStroke').checked },
-    stamp: { enabled: document.getElementById('stampEnabled').checked, dataURL: stampImage ? stampImage.src : null, x: stampX, y: stampY, size: stampSize, rotate: stampRotate, layer: stampLayer },
-    currentMonth: currentMonth,
-    year: +yearSelect.value,
-    filePrefix: filePrefix // 新規追加
-  };
-  const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
-  saveAs(blob, 'goshuin_settings.json');
-};
-
-document.getElementById('loadSettingsUpload').onchange = e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const s = JSON.parse(ev.target.result);
-    templates = s.templates ? s.templates.map(t => ({id: t.id, dataURL: t.dataURL})) : [];
-    selectedTemplate = templates.find(t => t.id === s.selectedTemplateId) || null;
-    renderTemplateList();
-
-    document.getElementById('dateEnabled').checked = s.date.enabled;
-    dateFont = s.date.font || 'KouzanBrushFont'; document.getElementById('dateFont').value = dateFont;
-    dateX = s.date.x; dateY = s.date.y;
-    document.getElementById('dateSize').value = s.date.size; document.getElementById('dateSizeVal').textContent = s.date.size;
-    document.getElementById('dateCorrection').value = s.date.correction; document.getElementById('dateCorrectionVal').textContent = s.date.correction;
-    document.getElementById('dateOpacity').value = s.date.opacity; document.getElementById('dateOpacityVal').textContent = s.date.opacity + '%';
-    document.getElementById('dateRepeat').value = s.date.repeat; document.getElementById('dateRepeatVal').textContent = s.date.repeat;
-    document.getElementById('dateStroke').checked = s.date.stroke;
-    document.getElementById('dateStrokeWidth').value = s.date.strokeWidth; document.getElementById('dateStrokeWidthVal').textContent = s.date.strokeWidth;
-
-    document.getElementById('hoheiEnabled').checked = s.hohei.enabled;
-    hoheiFont = s.hohei.font || 'KouzanBrushFont'; document.getElementById('hoheiFont').value = hoheiFont;
-    hoheiX = s.hohei.x; hoheiY = s.hohei.y;
-    document.getElementById('hoheiSize').value = s.hohei.size; document.getElementById('hoheiSizeVal').textContent = s.hohei.size;
-    document.getElementById('hoheiOpacity').value = s.hohei.opacity; document.getElementById('hoheiOpacityVal').textContent = s.hohei.opacity + '%';
-    document.getElementById('hoheiRepeat').value = s.hohei.repeat; document.getElementById('hoheiRepeatVal').textContent = s.hohei.repeat;
-    document.getElementById('hoheiStroke').checked = s.hohei.stroke;
-
-    document.getElementById('jinjaEnabled').checked = s.jinja.enabled;
-    document.getElementById('jinjaText').value = s.jinja.text || "";
-    document.getElementById('jinjaColor').value = s.jinja.color;
-    jinjaFont = s.jinja.font || 'KouzanBrushFont'; document.getElementById('jinjaFont').value = jinjaFont;
-    jinjaX = s.jinja.x; jinjaY = s.jinja.y;
-    document.getElementById('jinjaSize').value = s.jinja.size; document.getElementById('jinjaSizeVal').textContent = s.jinja.size;
-    document.getElementById('jinjaOpacity').value = s.jinja.opacity; document.getElementById('jinjaOpacityVal').textContent = s.jinja.opacity + '%';
-    document.getElementById('jinjaRepeat').value = s.jinja.repeat; document.getElementById('jinjaRepeatVal').textContent = s.jinja.repeat;
-    document.getElementById('jinjaStroke').checked = s.jinja.stroke;
-
-    document.getElementById('stampEnabled').checked = s.stamp.enabled;
-    stampX = s.stamp.x; stampY = s.stamp.y; stampSize = s.stamp.size; stampRotate = s.stamp.rotate; stampLayer = s.stamp.layer || 'top';
-    document.getElementById('stampSize').value = stampSize; document.getElementById('stampSizeVal').textContent = stampSize;
-    document.getElementById('stampRotate').value = stampRotate; document.getElementById('stampRotateVal').textContent = stampRotate + '°';
-    document.getElementById('stampLayer').value = stampLayer;
-    if (s.stamp.dataURL) {
-      const img = new Image();
-      img.onload = () => { stampImage = img; drawAll(); };
-      img.src = s.stamp.dataURL;
-    } else stampImage = null;
-
-    currentMonth = s.currentMonth || 1;
-    yearSelect.value = s.year || currentYear;
-
-    // ファイルプリフィックス復元
-    filePrefix = s.filePrefix || 'Nameless Shrine';
-    document.getElementById('filePrefix').value = s.filePrefix || '';
-
-    updateSlidersFromPositions();
-    drawAll();
-  };
-  reader.readAsText(file);
-};
-
-// 初期化
-filePrefix = 'Nameless Shrine'; // 初期値
-updatePositionsFromSliders();
-document.querySelectorAll('input[type="range"]').forEach(s => s.dispatchEvent(new Event('input')));
-drawAll();
-</script>
-</body>
-</html>
