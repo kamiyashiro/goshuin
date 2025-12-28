@@ -2,196 +2,395 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Goshuin Custom Pro - Full Version</title>
+<title>Goshuin Custom Pro - Final Edition</title>
+
+<!-- Google Fonts筆文字群 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One&family=Kosugi+Maru&family=Potta+One&family=Yuji+Boku&family=Yuji+Syuku&family=Zen+Kurenaido&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+
 <style>
-body { margin:0; padding:20px; background:#f0f0f0; font-family:sans-serif; text-align:center;}
-#wrap { max-width:900px; margin:0 auto; background:white; padding:30px; box-shadow:0 0 20px rgba(0,0,0,0.2); border-radius:15px;}
-h1{color:#d40000; font-size:32px; margin-bottom:20px;}
-.tabs{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;}
-.tab-btn{padding:12px 24px; background:#ddd; cursor:pointer; border-radius:10px 10px 0 0; font-weight:bold;}
-.tab-btn.active{background:#fff; border:2px solid #d40000; border-bottom:none;}
-.tab-content{display:none; background:#fff; padding:30px; border:2px solid #d40000; border-radius:0 10px 10px 10px;}
-.tab-content.active{display:block;}
-.controls-row{display:flex; flex-wrap:wrap; gap:15px; margin-bottom:20px; align-items:center; justify-content:center;}
-.controls-row label{font-weight:bold; min-width:100px;}
-input[type="range"]{width:180px;}
-span{min-width:60px; display:inline-block; text-align:left; font-weight:bold;}
-canvas{border:4px solid #333; box-shadow:0 10px 30px rgba(0,0,0,0.4); background:white; margin-top:30px; cursor:grab;}
-#template-list{display:flex; gap:15px; flex-wrap:wrap; justify-content:center; margin-top:20px;}
-.template-thumb{width:120px; height:120px; border:3px solid #ccc; cursor:pointer; position:relative; border-radius:10px; overflow:hidden;}
-.template-thumb img{width:100%; height:100%; object-fit:cover;}
-.template-thumb.selected{border-color:#d40000; box-shadow:0 0 15px #d40000;}
-.delete-btn{position:absolute; top:0; right:0; background:rgba(255,0,0,0.8); color:white; border:none; width:30px; height:30px; cursor:pointer; font-size:18px;}
-button.big-btn{padding:20px 40px; font-size:20px; background:#d40000; color:white; border:none; border-radius:10px; cursor:pointer; margin:10px;}
-button.big-btn:hover{background:#b00000;}
-#version{margin-top:50px; font-size:16px; color:#666;}
+body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; text-align: center; }
+#wrap { max-width: 900px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.2); border-radius: 15px; }
+h1 { color: #d40000; font-size: 32px; margin-bottom: 20px; }
+.tabs { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.tab-btn { padding: 12px 24px; background: #ddd; cursor: pointer; border-radius: 10px 10px 0 0; font-weight: bold; }
+.tab-btn.active { background: #fff; border: 2px solid #d40000; border-bottom: none; }
+.tab-content { display: none; background: #fff; padding: 30px; border: 2px solid #d40000; border-radius: 0 10px 10px 10px; }
+.tab-content.active { display: block; }
+.controls-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; justify-content: center; }
+.controls-row label { font-weight: bold; min-width: 100px; }
+input[type="range"] { width: 180px; }
+span { min-width: 60px; display: inline-block; text-align: left; font-weight: bold; }
+canvas { border: 4px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; margin-top: 30px; cursor: grab; }
+#template-list { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+.template-thumb { width: 120px; height: 120px; border: 3px solid #ccc; cursor: pointer; position: relative; border-radius: 10px; overflow: hidden; }
+.template-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.template-thumb.selected { border-color: #d40000; box-shadow: 0 0 15px #d40000; }
+.delete-btn { position: absolute; top: 0; right: 0; background: rgba(255,0,0,0.8); color: white; border: none; width: 30px; height: 30px; cursor: pointer; font-size: 18px; }
+button.big-btn { padding: 20px 40px; font-size: 20px; background: #d40000; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 10px; }
+button.big-btn:hover { background: #b00000; }
+#version { margin-top: 50px; font-size: 16px; color: #666; }
 </style>
 </head>
 <body>
 <div id="wrap">
-<h1>Goshuin Custom Pro - Full Version</h1>
-<div class="tabs">
-<div class="tab-btn active" data-tab="background">背景</div>
-<div class="tab-btn" data-tab="date">日付</div>
-<div class="tab-btn" data-tab="hohei">奉拝</div>
-<div class="tab-btn" data-tab="jinja">神社名</div>
-<div class="tab-btn" data-tab="stamp">朱印</div>
-<div class="tab-btn" data-tab="save">保存/設定</div>
+ <h1>Goshuin Custom Pro - Final</h1>
+ <div class="tabs">
+  <div class="tab-btn active" data-tab="background">背景</div>
+  <div class="tab-btn" data-tab="date">日付</div>
+  <div class="tab-btn" data-tab="hohei">奉拝</div>
+  <div class="tab-btn" data-tab="jinja">神社名</div>
+  <div class="tab-btn" data-tab="stamp">朱印</div>
+  <div class="tab-btn" data-tab="save">保存/設定</div>
+ </div>
+
+ <div id="background" class="tab-content active">
+  <p>テンプレート画像をアップロードしてください（複数可・ドラッグ＆ドロップ対応）</p>
+  <input type="file" id="templateUpload" accept="image/*" multiple style="padding:10px;font-size:16px;">
+  <div id="template-list"></div>
+ </div>
+
+ <div id="date" class="tab-content">
+  <div class="controls-row">
+   <label>表示:</label> <input type="checkbox" id="dateEnabled" checked>
+   <label>フォント:</label>
+   <select id="dateFont">
+    <option value="KouzanMouhituFont" selected>衡山毛筆フォント (インストール済み推奨)</option>
+    <option value="Yuji Syuku">佑字 肅 (毛筆楷書)</option>
+    <option value="Yuji Boku">佑字 朴 (柔らか毛筆)</option>
+    <option value="Zen Old Mincho">Zen Old Mincho</option>
+    <option value="Klee One">Klee One</option>
+    <option value="Kosugi Maru">Kosugi Maru</option>
+    <option value="Potta One">Potta One</option>
+    <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
+    <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+   </select>
+   <input type="text" id="dateFontCustom" placeholder="自由入力" size="15">
+   <button onclick="setCustomFont('date')">適用</button>
+  </div>
+  <div class="controls-row">
+   <label>年:</label> <select id="yearSelect"></select>
+   <button id="prevMonthBtn">◀ 前月</button>
+   <button id="nextMonthBtn">次月 ▶</button>
+  </div>
+  <div class="controls-row">
+   <label>X位置:</label> <input type="range" id="dateX" min="0" max="512" value="256"><span id="dateXVal">256</span>
+   <label>Y位置:</label> <input type="range" id="dateY" min="0" max="512" value="200"><span id="dateYVal">200</span>
+  </div>
+  <div class="controls-row">
+   <label>サイズ:</label> <input type="range" id="dateSize" min="20" max="80" value="40"><span id="dateSizeVal">40</span>
+   <label>補正:</label> <input type="range" id="dateCorrection" min="-10" max="10" value="0"><span id="dateCorrectionVal">0</span>
+  </div>
+  <div class="controls-row">
+   <label>中塗り濃さ:</label> <input type="range" id="dateOpacity" min="10" max="100" value="100"><span id="dateOpacityVal">100%</span>
+   <label>重ね回数:</label> <input type="range" id="dateRepeat" min="1" max="8" value="4"><span id="dateRepeatVal">4</span>
+  </div>
+  <div class="controls-row">
+   <label>外周線:</label> <input type="checkbox" id="dateStroke" checked>
+   <label>外周太さ:</label> <input type="range" id="dateStrokeWidth" min="1" max="10" value="2"><span id="dateStrokeWidthVal">2</span>
+  </div>
+ </div>
+
+ <div id="hohei" class="tab-content">
+  <div class="controls-row">
+   <label>表示:</label> <input type="checkbox" id="hoheiEnabled" checked>
+   <label>フォント:</label>
+   <select id="hoheiFont">
+    <option value="KouzanMouhituFont" selected>衡山毛筆フォント</option>
+    <option value="Yuji Syuku">佑字 肅</option>
+    <option value="Yuji Boku">佑字 朴</option>
+    <option value="Zen Old Mincho">Zen Old Mincho</option>
+    <option value="Klee One">Klee One</option>
+    <option value="Kosugi Maru">Kosugi Maru</option>
+    <option value="Potta One">Potta One</option>
+    <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
+    <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+   </select>
+  </div>
+  <div class="controls-row">
+   <label>X位置:</label> <input type="range" id="hoheiX" min="0" max="512" value="100"><span id="hoheiXVal">100</span>
+   <label>Y位置:</label> <input type="range" id="hoheiY" min="0" max="512" value="400"><span id="hoheiYVal">400</span>
+  </div>
+  <div class="controls-row">
+   <label>サイズ:</label> <input type="range" id="hoheiSize" min="20" max="80" value="35"><span id="hoheiSizeVal">35</span>
+  </div>
+  <div class="controls-row">
+   <label>中塗り濃さ:</label> <input type="range" id="hoheiOpacity" min="10" max="100" value="100"><span id="hoheiOpacityVal">100%</span>
+   <label>重ね回数:</label> <input type="range" id="hoheiRepeat" min="1" max="8" value="4"><span id="hoheiRepeatVal">4</span>
+  </div>
+  <div class="controls-row">
+   <label>外周線:</label> <input type="checkbox" id="hoheiStroke">
+  </div>
+ </div>
+
+ <div id="jinja" class="tab-content">
+  <div class="controls-row">
+   <label>表示:</label> <input type="checkbox" id="jinjaEnabled" checked>
+   <label>神社名:</label> <input type="text" id="jinjaText" value="神宮寺" size="20">
+   <label>色:</label> <select id="jinjaColor">
+    <option value="#000000">黒</option>
+    <option value="#d40000">赤</option>
+   </select>
+  </div>
+  <div class="controls-row">
+   <label>フォント:</label>
+   <select id="jinjaFont">
+    <option value="KouzanMouhituFont" selected>衡山毛筆フォント</option>
+    <option value="Yuji Syuku">佑字 肅</option>
+    <option value="Yuji Boku">佑字 朴</option>
+    <option value="Zen Old Mincho">Zen Old Mincho</option>
+    <option value="Klee One">Klee One</option>
+    <option value="Kosugi Maru">Kosugi Maru</option>
+    <option value="Potta One">Potta One</option>
+    <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
+    <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+   </select>
+  </div>
+  <div class="controls-row">
+   <label>X位置:</label> <input type="range" id="jinjaX" min="0" max="512" value="256"><span id="jinjaXVal">256</span>
+   <label>Y位置:</label> <input type="range" id="jinjaY" min="0" max="512" value="100"><span id="jinjaYVal">100</span>
+  </div>
+  <div class="controls-row">
+   <label>サイズ:</label> <input type="range" id="jinjaSize" min="20" max="80" value="50"><span id="jinjaSizeVal">50</span>
+  </div>
+  <div class="controls-row">
+   <label>中塗り濃さ:</label> <input type="range" id="jinjaOpacity" min="10" max="100" value="100"><span id="jinjaOpacityVal">100%</span>
+   <label>重ね回数:</label> <input type="range" id="jinjaRepeat" min="1" max="8" value="4"><span id="jinjaRepeatVal">4</span>
+  </div>
+  <div class="controls-row">
+   <label>外周線:</label> <input type="checkbox" id="jinjaStroke">
+  </div>
+ </div>
+
+ <div id="stamp" class="tab-content">
+  <p>朱印画像アップロード (透過PNG推奨)</p>
+  <input type="file" id="stampUpload" accept="image/*" style="padding:10px;font-size:16px;">
+  <div class="controls-row">
+   <label>サイズ:</label> <input type="range" id="stampSize" min="50" max="300" value="150"><span id="stampSizeVal">150</span>
+   <label>回転:</label> <input type="range" id="stampRotate" min="-180" max="180" value="0"><span id="stampRotateVal">0°</span>
+   <label>重ね順:</label> <select id="stampLayer">
+    <option value="top">最上</option>
+    <option value="bottom">背景の上</option>
+   </select>
+  </div>
+  <p>キャンバス上でクリック＆ドラッグして位置調整してください</p>
+ </div>
+
+ <div id="save" class="tab-content">
+  <button class="big-btn" id="downloadBtn">単体保存 (現在の月)</button>
+  <button class="big-btn" id="downloadAllBtn">12ヶ月一括ZIP保存</button>
+  <div class="controls-row">
+    <button class="big-btn" id="saveSettingsBtn">設定保存 (JSON)</button>
+    <input type="file" id="loadSettingsInput" accept=".json">
+  </div>
+ </div>
+
+ <canvas id="goshuinCanvas" width="512" height="512"></canvas>
+ <div id="version">Goshuin Custom Pro - Final Edition ♡ 2025.12.29 完成おめでとう！</div>
 </div>
 
-<div id="background" class="tab-content active">
-<p>テンプレート画像をアップロード（複数可・ドラッグ＆ドロップ）</p>
-<input type="file" id="templateUpload" accept="image/*" multiple style="padding:10px;font-size:16px;">
-<div id="template-list"></div>
-</div>
-
-<div id="date" class="tab-content">
-<div class="controls-row">
-<label>表示:</label> <input type="checkbox" id="dateEnabled" checked>
-<label>フォント:</label>
-<select id="dateFont">
-<option value="Klee One" selected>Klee One</option>
-<option value="Kosugi Maru">Kosugi Maru</option>
-<option value="Potta One">Potta One</option>
-<option value="Yuji Boku">Yuji Boku</option>
-<option value="Yuji Syuku">Yuji Syuku</option>
-<option value="Zen Old Mincho">Zen Old Mincho</option>
-<option value="'MS Gothic',sans-serif">MS Gothic</option>
-<option value="'MS Mincho',serif">MS Mincho</option>
-</select>
-<input type="text" id="dateFontCustom" placeholder="自由入力" size="15">
-<button onclick="setCustomFont('date')">適用</button>
-</div>
-
-<div class="controls-row">
-<label>年:</label> <select id="yearSelect"></select>
-<button id="prevMonthBtn">◀ 前月</button>
-<button id="nextMonthBtn">次月 ▶</button>
-</div>
-
-<div class="controls-row">
-<label>X位置:</label> <input type="range" id="dateX" min="0" max="512" value="256"><span id="dateXVal">256</span>
-<label>Y位置:</label> <input type="range" id="dateY" min="0" max="512" value="200"><span id="dateYVal">200</span>
-</div>
-
-<div class="controls-row">
-<label>サイズ:</label> <input type="range" id="dateSize" min="20" max="80" value="40"><span id="dateSizeVal">40</span>
-</div>
-</div>
-
-<div id="hohei" class="tab-content">
-<div class="controls-row">
-<label>表示:</label> <input type="checkbox" id="hoheiEnabled" checked>
-<label>フォント:</label>
-<select id="hoheiFont">
-<option value="Klee One" selected>Klee One</option>
-<option value="Kosugi Maru">Kosugi Maru</option>
-<option value="Potta One">Potta One</option>
-<option value="Yuji Boku">Yuji Boku</option>
-<option value="Yuji Syuku">Yuji Syuku</option>
-<option value="Zen Old Mincho">Zen Old Mincho</option>
-<option value="'MS Gothic',sans-serif">MS Gothic</option>
-<option value="'MS Mincho',serif">MS Mincho</option>
-</select>
-</div>
-
-<div class="controls-row">
-<label>X位置:</label> <input type="range" id="hoheiX" min="0" max="512" value="256"><span id="hoheiXVal">256</span>
-<label>Y位置:</label> <input type="range" id="hoheiY" min="0" max="512" value="300"><span id="hoheiYVal">300</span>
-</div>
-
-<div class="controls-row">
-<label>サイズ:</label> <input type="range" id="hoheiSize" min="20" max="80" value="40"><span id="hoheiSizeVal">40</span>
-</div>
-</div>
-
-<div id="jinja" class="tab-content">
-<div class="controls-row">
-<label>表示:</label> <input type="checkbox" id="jinjaEnabled" checked>
-<label>神社名:</label> <input type="text" id="jinjaText" value="神宮寺" size="20">
-<label>色:</label> <select id="jinjaColor">
-<option value="#000000">黒</option>
-<option value="#d40000">赤</option>
-</select>
-</div>
-<div class="controls-row">
-<label>フォント:</label>
-<select id="jinjaFont">
-<option value="Klee One" selected>Klee One</option>
-<option value="Kosugi Maru">Kosugi Maru</option>
-<option value="Potta One">Potta One</option>
-<option value="Yuji Boku">Yuji Boku</option>
-<option value="Yuji Syuku">Yuji Syuku</option>
-<option value="Zen Old Mincho">Zen Old Mincho</option>
-<option value="'MS Gothic',sans-serif">MS Gothic</option>
-<option value="'MS Mincho',serif">MS Mincho</option>
-</select>
-</div>
-<div class="controls-row">
-<label>X位置:</label> <input type="range" id="jinjaX" min="0" max="512" value="256"><span id="jinjaXVal">256</span>
-<label>Y位置:</label> <input type="range" id="jinjaY" min="0" max="512" value="100"><span id="jinjaYVal">100</span>
-</div>
-<div class="controls-row">
-<label>サイズ:</label> <input type="range" id="jinjaSize" min="20" max="80" value="50"><span id="jinjaSizeVal">50</span>
-</div>
-</div>
-
-<div id="stamp" class="tab-content">
-<div class="controls-row">
-<label>表示:</label> <input type="checkbox" id="stampEnabled" checked>
-<label>アップロード:</label> <input type="file" id="stampUpload" accept="image/*">
-</div>
-<div class="controls-row">
-<label>X位置:</label> <input type="range" id="stampX" min="0" max="512" value="256"><span id="stampXVal">256</span>
-<label>Y位置:</label> <input type="range" id="stampY" min="0" max="512" value="256"><span id="stampYVal">256</span>
-</div>
-<div class="controls-row">
-<label>サイズ:</label> <input type="range" id="stampSize" min="50" max="300" value="150"><span id="stampSizeVal">150</span>
-</div>
-</div>
-
-<div id="save" class="tab-content">
-<button class="big-btn" id="downloadBtn">単体保存</button>
-<button class="big-btn" id="saveSettingsBtn">設定保存</button>
-<input type="file" id="loadSettingsInput" accept=".json" style="display:none;">
-<button class="big-btn" id="loadSettingsBtn">設定読み込み</button>
-</div>
-
-<canvas id="goshuinCanvas" width="512" height="512"></canvas>
-<div id="version">Goshuin Custom Pro - Full Version ♡ 2025.12.29 完成！</div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-// --- 変数 ---
-const canvas=document.getElementById('goshuinCanvas'), ctx=canvas.getContext('2d');
-let currentMonth=1;
-let templates=[], selectedTemplate=null, stampImage=null;
-let dragLayer=null, dragOffsetX=0, dragOffsetY=0;
+/* === 変数 === */
+const canvas = document.getElementById('goshuinCanvas');
+const ctx = canvas.getContext('2d');
+let currentMonth = 1;
+let templates = [];
+let selectedTemplate = null;
+let stampImage = null;
+let stampX = 256, stampY = 256, stampSize = 150, stampRotate = 0, stampLayer = 'top';
+let dateFont = 'KouzanMouhituFont', hoheiFont = 'KouzanMouhituFont', jinjaFont = 'KouzanMouhituFont';
 
-// --- タブ ---
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.onclick=()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.tab).classList.add('active');drawAll();}
+/* === タブ切替 === */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    drawAll();
+  };
 });
 
-// --- 背景 ---
-document.getElementById('templateUpload').onchange=e=>{
-  Array.from(e.target.files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const id=Date.now();
-      templates.push({id,dataURL:ev.target.result});
+/* === 背景テンプレートアップロード === */
+document.getElementById('templateUpload').onchange = e => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const id = Date.now();
+      templates.push({id, dataURL: ev.target.result});
       renderTemplateList();
-      if(!selectedTemplate) selectTemplate(templates[templates.length-1]);
+      if (!selectedTemplate) selectTemplate(templates[templates.length - 1]);
     };
     reader.readAsDataURL(file);
   });
 };
 
-function renderTemplateList(){
-  const list=document.getElementById('template-list'); list.innerHTML='';
-  templates.forEach(t=>{
-    const div=d
+function renderTemplateList() {
+  const list = document.getElementById('template-list');
+  list.innerHTML = '';
+  templates.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'template-thumb' + (selectedTemplate && selectedTemplate.id === t.id ? ' selected' : '');
+    div.innerHTML = `<img src="${t.dataURL}"><button class="delete-btn">×</button>`;
+    div.onclick = e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        templates = templates.filter(tt => tt.id !== t.id);
+        renderTemplateList();
+        if (selectedTemplate && selectedTemplate.id === t.id) selectedTemplate = null;
+        drawAll();
+      } else selectTemplate(t);
+    };
+    list.appendChild(div);
+  });
+}
+
+function selectTemplate(t) { selectedTemplate = t; renderTemplateList(); drawAll(); }
+
+/* === 朱印アップロード === */
+document.getElementById('stampUpload').onchange = e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => { stampImage = img; drawAll(); };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+/* === 年セレクト === */
+const yearSelect = document.getElementById('yearSelect');
+for(let y=2020; y<=2030; y++){ const o=document.createElement('option'); o.value=y; o.text=y; yearSelect.appendChild(o); }
+yearSelect.value = new Date().getFullYear();
+
+/* === スライダー表示更新 === */
+function linkSlider(rangeId, valId, callback){
+  const r=document.getElementById(rangeId);
+  const v=document.getElementById(valId);
+  r.oninput=()=>{v.innerText=r.value; callback(r.value); drawAll();}
+}
+linkSlider('dateX','dateXVal',v=>dateX=v);
+linkSlider('dateY','dateYVal',v=>dateY=v);
+linkSlider('dateSize','dateSizeVal',v=>dateSize=v);
+linkSlider('dateOpacity','dateOpacityVal',v=>dateOpacity=v);
+linkSlider('hoheiX','hoheiXVal',v=>hoheiX=v);
+linkSlider('hoheiY','hoheiYVal',v=>hoheiY=v);
+linkSlider('hoheiSize','hoheiSizeVal',v=>hoheiSize=v);
+linkSlider('jinjaX','jinjaXVal',v=>jinjaX=v);
+linkSlider('jinjaY','jinjaYVal',v=>jinjaY=v);
+linkSlider('jinjaSize','jinjaSizeVal',v=>jinjaSize=v);
+linkSlider('stampSize','stampSizeVal',v=>stampSize=v);
+linkSlider('stampRotate','stampRotateVal',v=>stampRotate=v);
+
+/* === 文字オンオフ === */
+const dateEnabled = document.getElementById('dateEnabled');
+const hoheiEnabled = document.getElementById('hoheiEnabled');
+const jinjaEnabled = document.getElementById('jinjaEnabled');
+
+/* === ドラッグ対応 === */
+let dragTarget = null, dragOffsetX = 0, dragOffsetY = 0;
+const dragItems = ['date','hohei','jinja','stamp'];
+canvas.onmousedown = e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  dragItems.forEach(id=>{
+    let x=window[id+'X']||0, y=window[id+'Y']||0, s=window[id+'Size']||0;
+    if(id==='stamp'){x=stampX;y=stampY;s=stampSize;}
+    if(mx>x-30 && mx<x+30 && my>y-30 && my<y+30){ dragTarget=id; dragOffsetX=mx-x; dragOffsetY=my-y; canvas.style.cursor='grabbing'; }
+  });
+};
+canvas.onmousemove = e => {
+  if(dragTarget){
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const nx = mx - dragOffsetX, ny = my - dragOffsetY;
+    if(dragTarget==='stamp'){stampX=nx;stampY=ny;}else{window[dragTarget+'X']=nx;window[dragTarget+'Y']=ny;}
+    drawAll();
+  }
+};
+canvas.onmouseup = e => { dragTarget=null; canvas.style.cursor='grab'; };
+canvas.onmouseleave = e => { dragTarget=null; canvas.style.cursor='grab'; };
+
+/* === 描画 === */
+function drawAll(){
+  ctx.clearRect(0,0,512,512);
+  if(selectedTemplate){
+    const img = new Image(); img.src=selectedTemplate.dataURL;
+    ctx.drawImage(img,0,0,512,512);
+  }
+  if(dateEnabled.checked){ drawText('2025-12-29',dateX||256,dateY||200,dateFont,dateSize||40,'#000'); }
+  if(hoheiEnabled.checked){ drawText('奉拝',hoheiX||100,hoheiY||400,hoheiFont,hoheiSize||35,'#000'); }
+  if(jinjaEnabled.checked){ drawText(document.getElementById('jinjaText').value,jinjaX||256,jinjaY||100,jinjaFont,jinjaSize||50,document.getElementById('jinjaColor').value); }
+  if(stampImage){
+    ctx.save();
+    ctx.translate(stampX,stampY);
+    ctx.rotate(stampRotate*Math.PI/180);
+    ctx.drawImage(stampImage,-stampSize/2,-stampSize/2,stampSize,stampSize);
+    ctx.restore();
+  }
+}
+
+function drawText(txt,x,y,font,size,color){
+  ctx.save();
+  ctx.font = `${size}px "${font}"`;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(txt,x,y);
+  ctx.restore();
+}
+
+/* === カスタムフォント適用 === */
+function setCustomFont(target){
+  const val = document.getElementById(target+'FontCustom').value;
+  if(val){ window[target+'Font']=val; drawAll(); }
+}
+
+/* === 保存ボタン === */
+document.getElementById('downloadBtn').onclick = ()=>{
+  canvas.toBlob(b=>saveAs(b,'goshuin_'+currentMonth+'.png'));
+};
+
+/* === 設定保存/読み込み === */
+document.getElementById('saveSettingsBtn').onclick = ()=>{
+  const settings = {
+    dateX,dateY,dateFont,dateSize,dateEnabled:dateEnabled.checked,
+    hoheiX,hoheiY,hoheiFont,hoheiSize,hoheiEnabled:hoheiEnabled.checked,
+    jinjaX,jinjaY,jinjaFont,jinjaSize, jinjaText:document.getElementById('jinjaText').value, jinjaColor:document.getElementById('jinjaColor').value, jinjaEnabled:jinjaEnabled.checked,
+    stampX,stampY,stampSize,stampRotate,stampLayer
+  };
+  const blob = new Blob([JSON.stringify(settings,null,2)],{type:'application/json'});
+  saveAs(blob,'goshuin_settings.json');
+};
+
+document.getElementById('loadSettingsInput').onchange = e=>{
+  const file = e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      const s = JSON.parse(ev.target.result);
+      Object.assign(window,s);
+      dateEnabled.checked = s.dateEnabled; hoheiEnabled.checked = s.hoheiEnabled; jinjaEnabled.checked = s.jinjaEnabled;
+      document.getElementById('jinjaText').value = s.jinjaText; document.getElementById('jinjaColor').value = s.jinjaColor;
+      drawAll();
+    };
+    reader.readAsText(file);
+  }
+};
+
+/* === 初期値 === */
+let dateX=256,dateY=200,dateSize=40,dateOpacity=100;
+let hoheiX=100,hoheiY=400,hoheiSize=35;
+let jinjaX=256,jinjaY=100,jinjaSize=50;
+
+drawAll();
+</script>
+</body>
+</html>
