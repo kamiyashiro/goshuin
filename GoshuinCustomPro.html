@@ -139,6 +139,12 @@ button.big-btn:hover { background: #b00000; }
     <option value="#d40000">赤</option>
    </select>
   </div>
+  <!-- 新規追加：ファイルプリフィックス入力 -->
+  <div class="controls-row">
+   <label>File Prefix:</label> 
+   <input type="text" id="filePrefix" value="" size="20" placeholder="例: MyShrine">
+   <span style="font-size:14px; color:#666;">(半角英数のみ・空欄=Nameless Shrine)</span>
+  </div>
   <div class="controls-row"><label>フォント:</label>
    <select id="jinjaFont">
     <option value="KouzanBrushFont" selected>衡山毛筆フォント (おすすめ・全員表示)</option>
@@ -214,6 +220,16 @@ let jinjaFont = 'KouzanBrushFont';
 let dateX = 256, dateY = 200;
 let hoheiX = 100, hoheiY = 400;
 let jinjaX = 256, jinjaY = 100;
+let filePrefix = ''; // 新規追加：ファイルプリフィックス
+
+// ASCIIのみ許可（入力時にチェック）
+document.getElementById('filePrefix').oninput = function() {
+  let value = this.value;
+  // ASCII範囲外の文字を削除
+  value = value.replace(/[^\x20-\x7E]/g, '');
+  this.value = value;
+  filePrefix = value || 'Nameless Shrine';
+};
 
 // タブ切り替え
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -226,7 +242,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   };
 });
 
-// 背景管理
+// 背景管理（変更なし）
 document.getElementById('templateUpload').onchange = e => {
   Array.from(e.target.files).forEach(file => {
     const reader = new FileReader();
@@ -269,7 +285,7 @@ function selectTemplate(t) {
   drawAll();
 }
 
-// 朱印アップロード
+// 朱印
 document.getElementById('stampUpload').onchange = e => {
   const file = e.target.files[0];
   if (file) {
@@ -283,7 +299,7 @@ document.getElementById('stampUpload').onchange = e => {
   }
 };
 
-// すべてのrangeスライダーを統一管理（朱印サイズ・回転も完璧にリアルタイム反映）
+// すべてのrangeスライダー（朱印サイズ・回転もリアルタイム反映）
 document.querySelectorAll('input[type="range"]').forEach(slider => {
   const valSpan = document.getElementById(slider.id + 'Val');
   slider.oninput = () => {
@@ -299,10 +315,10 @@ document.querySelectorAll('input[type="range"]').forEach(slider => {
 
 // その他のイベント
 document.querySelectorAll('input[type="checkbox"], input[type="text"], select').forEach(el => {
-  if (!el.id.includes('FontCustom')) el.onchange = drawAll;
+  if (!el.id.includes('FontCustom') && el.id !== 'filePrefix') el.onchange = drawAll;
 });
+document.getElementById('filePrefix').onchange = () => { filePrefix = document.getElementById('filePrefix').value || 'Nameless Shrine'; };
 
-// 朱印重ね順
 document.getElementById('stampLayer').onchange = () => { stampLayer = document.getElementById('stampLayer').value; drawAll(); };
 
 // カスタムフォント
@@ -329,7 +345,6 @@ for (let y = currentYear; y <= maxYear; y++) {
 }
 yearSelect.onchange = drawAll;
 
-// 月ナビ
 document.getElementById('prevMonthBtn').onclick = () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; drawAll(); };
 document.getElementById('nextMonthBtn').onclick = () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; drawAll(); };
 
@@ -351,7 +366,7 @@ function getJapaneseDate(year, month) {
   return yearStr + toKanji(month) + "月吉日";
 }
 
-// 描画
+// 描画関数（変更なし）
 function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont') {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -436,7 +451,7 @@ function updateSlidersFromPositions() {
   document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
 }
 
-// ドラッグ
+// ドラッグ（変更なし）
 let dragging = null;
 let offsetX = 0, offsetY = 0;
 canvas.onmousedown = e => {
@@ -482,15 +497,17 @@ function getTextBounds(type) {
   return {width, height};
 }
 
-// 画像保存
+// 画像保存（プリフィックス対応）
 document.getElementById('downloadBtn').onclick = () => {
+  const prefix = filePrefix || 'Nameless Shrine';
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
-  a.download = `Goshuin_${yearSelect.value}_${currentMonth.toString().padStart(2,'0')}.png`;
+  a.download = `${prefix}_${yearSelect.value}_${currentMonth.toString().padStart(2,'0')}.png`;
   a.click();
 };
 
 document.getElementById('downloadAllBtn').onclick = async () => {
+  const prefix = filePrefix || 'Nameless Shrine';
   const zip = new JSZip();
   const year = +yearSelect.value;
   const btn = document.getElementById('downloadAllBtn');
@@ -500,14 +517,14 @@ document.getElementById('downloadAllBtn').onclick = async () => {
     drawAll();
     await new Promise(r => setTimeout(r, 200));
     const dataURL = canvas.toDataURL('image/png');
-    zip.file(`Goshuin_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
+    zip.file(`${prefix}_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
     btn.textContent = `生成中... (${m}/12)`;
   }
-  saveAs(await zip.generateAsync({type:"blob"}), `Goshuin_${year}_All.zip`);
+  saveAs(await zip.generateAsync({type:"blob"}), `${prefix}_${year}_All.zip`);
   btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
 };
 
-// 設定保存・読み込み
+// 設定保存・読み込み（filePrefixも追加）
 document.getElementById('saveSettingsBtn').onclick = () => {
   const settings = {
     templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
@@ -517,7 +534,8 @@ document.getElementById('saveSettingsBtn').onclick = () => {
     jinja: { enabled: document.getElementById('jinjaEnabled').checked, text: document.getElementById('jinjaText').value, color: document.getElementById('jinjaColor').value, font: jinjaFont, x: jinjaX, y: jinjaY, size: +document.getElementById('jinjaSize').value, opacity: +document.getElementById('jinjaOpacity').value, repeat: +document.getElementById('jinjaRepeat').value, stroke: document.getElementById('jinjaStroke').checked },
     stamp: { enabled: document.getElementById('stampEnabled').checked, dataURL: stampImage ? stampImage.src : null, x: stampX, y: stampY, size: stampSize, rotate: stampRotate, layer: stampLayer },
     currentMonth: currentMonth,
-    year: +yearSelect.value
+    year: +yearSelect.value,
+    filePrefix: filePrefix // 新規追加
   };
   const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
   saveAs(blob, 'goshuin_settings.json');
@@ -575,6 +593,10 @@ document.getElementById('loadSettingsUpload').onchange = e => {
     currentMonth = s.currentMonth || 1;
     yearSelect.value = s.year || currentYear;
 
+    // ファイルプリフィックス復元
+    filePrefix = s.filePrefix || 'Nameless Shrine';
+    document.getElementById('filePrefix').value = s.filePrefix || '';
+
     updateSlidersFromPositions();
     drawAll();
   };
@@ -582,6 +604,7 @@ document.getElementById('loadSettingsUpload').onchange = e => {
 };
 
 // 初期化
+filePrefix = 'Nameless Shrine'; // 初期値
 updatePositionsFromSliders();
 document.querySelectorAll('input[type="range"]').forEach(s => s.dispatchEvent(new Event('input')));
 drawAll();
