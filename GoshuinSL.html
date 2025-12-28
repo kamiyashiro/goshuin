@@ -8,6 +8,7 @@
   font-family: 'KouzanBrush';
   src: url('./KouzanBrushFont.woff2') format('woff2');
 }
+
 body {
   margin: 0;
   padding: 20px;
@@ -16,12 +17,14 @@ body {
   font-family: sans-serif;
   text-align: center;
 }
+
 .header-title-ja {
   font-size: 32px;
   color: #d40000;
   margin-bottom: 10px;
   font-family: 'KouzanBrush', sans-serif;
 }
+
 .header-title-en {
   display: block;
   font-size: 20px;
@@ -29,11 +32,13 @@ body {
   margin-bottom: 10px;
   font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
 }
+
 #wrap {
   display: inline-block;
   position: relative;
   margin-top: 20px;
 }
+
 .controls {
   margin-bottom: 10px;
   display: flex;
@@ -42,7 +47,16 @@ body {
   gap: 10px;
   align-items: center;
 }
-select, button, input[type="range"] {
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+select, button, input[type="range"], input[type="checkbox"], input[type="file"] {
   padding: 6px 12px;
   font-size: 14px;
   cursor: pointer;
@@ -50,6 +64,7 @@ select, button, input[type="range"] {
   border: 2px solid #333;
   font-weight: bold;
 }
+
 canvas {
   border: 2px solid #333;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
@@ -65,19 +80,34 @@ canvas {
 </div>
 
 <div id="wrap">
-  <div class="controls">
+  <!-- 1行目：基本操作 -->
+  <div class="controls controls-row">
     年: <select id="yearSelect"></select>
-    文字サイズ: <input type="range" id="fontSizeSlider" min="8" max="80" value="38">
-    <span id="fontSizeLabel">38px</span>
-    X位置: <input type="range" id="posXSlider" min="0" max="512" value="50">
-    <span id="posXLabel">50px</span>
-    Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50">
-    <span id="posYLabel">50px</span>
-    <button id="prevMonthBtn">前月</button>
-    <button id="nextMonthBtn">次月</button>
-    <button id="downloadBtn">保存</button>
-    <button id="downloadAllBtn">一括ZIP保存</button>
+    前月: <button id="prevMonthBtn">◀</button>
+    次月: <button id="nextMonthBtn">▶</button>
+    X位置: <input type="range" id="posXSlider" min="0" max="512" value="50"><span id="posXLabel">50px</span>
+    Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50"><span id="posYLabel">50px</span>
+    保存: <button id="downloadBtn">保存</button>
+    一括ZIP: <button id="downloadAllBtn">全て保存</button>
   </div>
+
+  <!-- 2行目：文字効果調整 -->
+  <div class="controls controls-row">
+    文字サイズ: <input type="range" id="fontSizeSlider" min="8" max="80" value="38"><span id="fontSizeLabel">38px</span>
+    補正: <input type="range" id="textCorrectionSlider" min="-5" max="5" value="0"><span id="textCorrectionLabel">0px</span>
+    中塗り濃さ: <input type="range" id="fillOpacitySlider" min="10" max="100" value="100"><span id="fillOpacityLabel">100%</span>
+    重ね回数: <input type="range" id="fillRepeatSlider" min="1" max="5" value="4"><span id="fillRepeatLabel">4</span>
+    アンチエイリアス: <input type="checkbox" id="aaSwitch" checked>
+    外周線: <input type="checkbox" id="strokeSwitch">
+    外周太さ: <input type="range" id="strokeWidthSlider" min="1" max="10" value="1"><span id="strokeWidthLabel">1</span>
+  </div>
+
+  <!-- 3行目：設定保存/読み込み -->
+  <div class="controls controls-row">
+    <button id="exportSettingsBtn">設定を保存</button>
+    <input type="file" id="importSettingsInput" accept=".json">
+  </div>
+
   <canvas id="goshuinCanvas"></canvas>
 </div>
 
@@ -91,12 +121,23 @@ const templateUrl = "KamiyashiroGoshuinSL.png";
 let currentMonth = 1;
 const totalMonths = 12;
 
+// スライダ・チェック要素
 const fontSizeSlider = document.getElementById("fontSizeSlider");
 const fontSizeLabel = document.getElementById("fontSizeLabel");
+const textCorrectionSlider = document.getElementById("textCorrectionSlider");
+const textCorrectionLabel = document.getElementById("textCorrectionLabel");
+const fillOpacitySlider = document.getElementById("fillOpacitySlider");
+const fillOpacityLabel = document.getElementById("fillOpacityLabel");
+const fillRepeatSlider = document.getElementById("fillRepeatSlider");
+const fillRepeatLabel = document.getElementById("fillRepeatLabel");
+const strokeWidthSlider = document.getElementById("strokeWidthSlider");
+const strokeWidthLabel = document.getElementById("strokeWidthLabel");
 const posXSlider = document.getElementById("posXSlider");
 const posYSlider = document.getElementById("posYSlider");
 const posXLabel = document.getElementById("posXLabel");
 const posYLabel = document.getElementById("posYLabel");
+const aaSwitch = document.getElementById("aaSwitch");
+const strokeSwitch = document.getElementById("strokeSwitch");
 
 const yearSelect = document.getElementById("yearSelect");
 const nowYear = new Date().getFullYear();
@@ -106,15 +147,6 @@ for (let y = nowYear - 4; y <= nowYear + 5; y++) {
   option.textContent = y + "年";
   if (y === nowYear) option.selected = true;
   yearSelect.appendChild(option);
-}
-
-yearSelect.onchange = () => drawMonth(currentMonth, getSelectedYear());
-fontSizeSlider.oninput = () => { fontSizeLabel.textContent = fontSizeSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
-posXSlider.oninput = () => { posXLabel.textContent = posXSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
-posYSlider.oninput = () => { posYLabel.textContent = posYSlider.value + "px"; drawMonth(currentMonth, getSelectedYear()); };
-
-function getSelectedYear() {
-  return parseInt(yearSelect.value, 10);
 }
 
 // 漢数字変換
@@ -135,76 +167,151 @@ function getJapaneseDate(year, month) {
   return yearStr + monthStr + "吉日";
 }
 
-function drawVertical(text, x, y, lh, ctxRef) {
-  for (let i = 0; i < text.length; i++) ctxRef.fillText(text[i], x, y + i * lh);
+// 全文字描画
+function drawVertical(text, x, y, lh, correction=0) {
+  const opacity = parseInt(fillOpacitySlider.value,10)/100;
+  const repeat = parseInt(fillRepeatSlider.value,10);
+  const strokeWidth = parseInt(strokeWidthSlider.value,10);
+
+  ctx.lineWidth = strokeWidth;
+  ctx.strokeStyle = "#000";
+  ctx.fillStyle = `rgba(0,0,0,${opacity})`;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    let size = parseInt(ctx.font.match(/\d+/)[0]);
+    ctx.font = ctx.font.replace(/\d+px/, (size+correction)+"px");
+
+    // 中塗り複数回
+    for(let r=0; r<repeat; r++) ctx.fillText(ch, x, y + i*lh);
+
+    // 外周線
+    if(strokeSwitch.checked) ctx.strokeText(ch, x, y + i*lh);
+
+    ctx.font = ctx.font.replace(/\d+px/, size+"px");
+  }
 }
 
-function drawMonth(month, year, ctxRef = ctx) {
-  return new Promise((resolve) => {
+async function drawMonth(month, year) {
+  return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = templateUrl;
     img.onload = () => {
-      ctxRef.canvas.width = img.width;
-      ctxRef.canvas.height = img.height;
-      ctxRef.drawImage(img, 0, 0);
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0);
+
+      ctx.imageSmoothingEnabled = aaSwitch.checked;
 
       const dateStr = getJapaneseDate(year, month);
-      const size = parseInt(fontSizeSlider.value, 10);
-      const lh = size * 1.15;
-      const x = parseInt(posXSlider.value, 10);
-      const y = parseInt(posYSlider.value, 10);
+      let size = parseInt(fontSizeSlider.value,10);
+      if(size>60) size=60;
+      const lh = size*1.15;
+      const x = parseInt(posXSlider.value,10);
+      const y = parseInt(posYSlider.value,10);
+      const correction = parseInt(textCorrectionSlider.value,10);
 
-      ctxRef.font = `bold ${size}px 'KouzanBrush'`;
-      ctxRef.fillStyle = "#000"; // 濃いめ
-      ctxRef.textAlign = "center";
-      ctxRef.textBaseline = "top";
-      ctxRef.imageSmoothingEnabled = false; // アンチエイリアス
-      drawVertical(dateStr, x, y, lh, ctxRef);
-
+      ctx.font = `bold ${size}px 'KouzanBrush'`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      drawVertical(dateStr, x, y, lh, correction);
       resolve();
     };
   });
 }
 
-// 月切替ボタン
-document.getElementById("prevMonthBtn").onclick = () => { currentMonth = currentMonth > 1 ? currentMonth - 1 : totalMonths; drawMonth(currentMonth, getSelectedYear()); };
-document.getElementById("nextMonthBtn").onclick = () => { currentMonth = currentMonth < totalMonths ? currentMonth + 1 : 1; drawMonth(currentMonth, getSelectedYear()); };
+// スライダ・チェック反映
+const controls = [
+  [fontSizeSlider,fontSizeLabel,"px"],
+  [textCorrectionSlider,textCorrectionLabel,"px"],
+  [fillOpacitySlider,fillOpacityLabel,"%"],
+  [fillRepeatSlider,fillRepeatLabel,""],
+  [strokeWidthSlider,strokeWidthLabel,""],
+  [posXSlider,posXLabel,"px"],
+  [posYSlider,posYLabel,"px"]
+];
+
+controls.forEach(([slider,label,suffix])=>{
+  slider.oninput = ()=>{ label.textContent = slider.value+suffix; drawMonth(currentMonth,getSelectedYear()); };
+});
+[aaSwitch,strokeSwitch,yearSelect].forEach(el=>el.onchange = ()=>drawMonth(currentMonth,getSelectedYear()));
+
+// 月切替
+document.getElementById("prevMonthBtn").onclick = () => { currentMonth = currentMonth>1?currentMonth-1:totalMonths; drawMonth(currentMonth,getSelectedYear()); };
+document.getElementById("nextMonthBtn").onclick = () => { currentMonth = currentMonth<totalMonths?currentMonth+1:1; drawMonth(currentMonth,getSelectedYear()); };
 
 // 保存
 document.getElementById("downloadBtn").onclick = async () => {
-  await drawMonth(currentMonth, getSelectedYear());
-  canvas.toBlob(blob => {
-    const mm = currentMonth.toString().padStart(2,"0");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
-    a.click();
-  }, "image/png");
+  await drawMonth(currentMonth,getSelectedYear());
+  const mm = currentMonth.toString().padStart(2,"0");
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
+  a.click();
 };
 
-// 一括ZIP保存
+// 一括 ZIP
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
-  const tempCanvas = document.createElement("canvas");
-  const tempCtx = tempCanvas.getContext("2d");
-
-  for (let m = 1; m <= totalMonths; m++) {
-    await drawMonth(m, year, tempCtx);
-    await new Promise(r => tempCanvas.toBlob(blob => {
-      zip.file(`KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`, blob);
-      r();
-    }, "image/png"));
+  for(let m=1;m<=totalMonths;m++){
+    await drawMonth(m,year);
+    const dataURL = canvas.toDataURL("image/png");
+    const base64 = dataURL.split(",")[1];
+    const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
+    zip.file(filename,base64,{base64:true});
   }
-
-  const zipBlob = await zip.generateAsync({ type: "blob" });
-  saveAs(zipBlob, `KamiyashiroGoshuin${year}.zip`);
+  const content = await zip.generateAsync({type:"blob"});
+  saveAs(content, `KamiyashiroGoshuin${year}.zip`);
 };
 
-// 初期表示
-drawMonth(currentMonth, getSelectedYear());
-</script>
+// 設定の書き出し
+document.getElementById("exportSettingsBtn").onclick = ()=>{
+  const json = JSON.stringify({
+    fontSize: fontSizeSlider.value,
+    textCorrection: textCorrectionSlider.value,
+    fillOpacity: fillOpacitySlider.value,
+    fillRepeat: fillRepeatSlider.value,
+    stroke: strokeSwitch.checked,
+    strokeWidth: strokeWidthSlider.value,
+    aa: aaSwitch.checked,
+    posX: posXSlider.value,
+    posY: posYSlider.value
+  });
+  const blob = new Blob([json],{type:"application/json"});
+  saveAs(blob,"goshuin_settings.json");
+};
 
+// 設定の読み込み
+document.getElementById("importSettingsInput").onchange = e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = event=>{
+    const s = JSON.parse(event.target.result);
+    fontSizeSlider.value = s.fontSize;
+    textCorrectionSlider.value = s.textCorrection;
+    fillOpacitySlider.value = s.fillOpacity;
+    fillRepeatSlider.value = s.fillRepeat;
+    strokeSwitch.checked = s.stroke;
+    strokeWidthSlider.value = s.strokeWidth;
+    aaSwitch.checked = s.aa;
+    posXSlider.value = s.posX;
+    posYSlider.value = s.posY;
+
+    // ラベル更新
+    controls.forEach(([slider,label,suffix])=>{ label.textContent = slider.value+suffix; });
+    drawMonth(currentMonth,getSelectedYear());
+  };
+  reader.readAsText(file);
+};
+
+function getSelectedYear(){return parseInt(yearSelect.value,10);}
+
+// 初期表示
+drawMonth(currentMonth,getSelectedYear());
+</script>
 </body>
 </html>
