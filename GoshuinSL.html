@@ -5,110 +5,110 @@
 <title>SL用御朱印生成 for Second Life</title>
 <style>
 @font-face {
-  font-family: 'KouzanBrush';
-  src: url('./KouzanBrushFont.woff2') format('woff2');
+ font-family: 'KouzanBrush';
+ src: url('./KouzanBrushFont.woff2') format('woff2');
 }
 
 body {
-  margin: 0;
-  padding: 20px;
-  background: url('./Iwakura.webp') no-repeat center center fixed;
-  background-size: cover;
-  font-family: sans-serif;
-  text-align: center;
+ margin: 0;
+ padding: 20px;
+ background: url('./Iwakura.webp') no-repeat center center fixed;
+ background-size: cover;
+ font-family: sans-serif;
+ text-align: center;
 }
 
 .header-title-ja {
-  font-size: 32px;
-  color: #d40000;
-  margin-bottom: 10px;
-  font-family: 'KouzanBrush', sans-serif;
+ font-size: 32px;
+ color: #d40000;
+ margin-bottom: 10px;
+ font-family: 'KouzanBrush', sans-serif;
 }
 
 .header-title-en {
-  display: block;
-  font-size: 20px;
-  color: #d40000;
-  margin-bottom: 10px;
-  font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
+ display: block;
+ font-size: 20px;
+ color: #d40000;
+ margin-bottom: 10px;
+ font-family: 'MS Gothic', 'ＭＳ ゴシック', sans-serif;
 }
 
 #wrap {
-  display: inline-block;
-  position: relative;
-  margin-top: 20px;
+ display: inline-block;
+ position: relative;
+ margin-top: 20px;
 }
 
 .controls {
-  margin-bottom: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
+ margin-bottom: 10px;
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: center;
+ gap: 10px;
+ align-items: center;
 }
 
 .controls-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 5px;
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: center;
+ gap: 10px;
+ margin-bottom: 5px;
 }
 
 select, button, input[type="range"], input[type="checkbox"], input[type="file"] {
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 2px solid #333;
-  font-weight: bold;
+ padding: 6px 12px;
+ font-size: 14px;
+ cursor: pointer;
+ border-radius: 6px;
+ border: 2px solid #333;
+ font-weight: bold;
 }
 
 canvas {
-  border: 2px solid #333;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  background: white;
+ border: 2px solid #333;
+ box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+ background: white;
 }
 </style>
 </head>
 <body>
 
 <div>
-  <div class="header-title-ja">SL用御朱印生成</div>
-  <div class="header-title-en">Goshuin Generator for Second Life</div>
+ <div class="header-title-ja">SL用御朱印生成</div>
+ <div class="header-title-en">Goshuin Generator for Second Life</div>
 </div>
 
 <div id="wrap">
-  <!-- 1行目：基本操作 -->
-  <div class="controls controls-row">
-    年: <select id="yearSelect"></select>
-    前月: <button id="prevMonthBtn">◀</button>
-    次月: <button id="nextMonthBtn">▶</button>
-    X位置: <input type="range" id="posXSlider" min="0" max="512" value="50"><span id="posXLabel">50px</span>
-    Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50"><span id="posYLabel">50px</span>
-    保存: <button id="downloadBtn">保存</button>
-    一括ZIP: <button id="downloadAllBtn">全て保存</button>
-  </div>
+ <!-- 1行目：基本操作 -->
+ <div class="controls controls-row">
+  年: <select id="yearSelect"></select>
+  前月: <button id="prevMonthBtn">◀</button>
+  次月: <button id="nextMonthBtn">▶</button>
+  X位置: <input type="range" id="posXSlider" min="0" max="512" value="50"><span id="posXLabel">50px</span>
+  Y位置: <input type="range" id="posYSlider" min="0" max="512" value="50"><span id="posYLabel">50px</span>
+  保存: <button id="downloadBtn">保存</button>
+  一括ZIP: <button id="downloadAllBtn">全て保存</button>
+ </div>
 
-  <!-- 2行目：文字効果調整 -->
-  <div class="controls controls-row">
-    文字サイズ: <input type="range" id="fontSizeSlider" min="8" max="80" value="38"><span id="fontSizeLabel">38px</span>
-    補正: <input type="range" id="textCorrectionSlider" min="-5" max="5" value="0"><span id="textCorrectionLabel">0px</span>
-    中塗り濃さ: <input type="range" id="fillOpacitySlider" min="10" max="100" value="100"><span id="fillOpacityLabel">100%</span>
-    重ね回数: <input type="range" id="fillRepeatSlider" min="1" max="5" value="4"><span id="fillRepeatLabel">4</span>
-    アンチエイリアス: <input type="checkbox" id="aaSwitch" checked>
-    外周線: <input type="checkbox" id="strokeSwitch">
-    外周太さ: <input type="range" id="strokeWidthSlider" min="1" max="10" value="1"><span id="strokeWidthLabel">1</span>
-  </div>
+ <!-- 2行目：文字効果調整 -->
+ <div class="controls controls-row">
+  文字サイズ: <input type="range" id="fontSizeSlider" min="8" max="80" value="38"><span id="fontSizeLabel">38px</span>
+  補正: <input type="range" id="textCorrectionSlider" min="-5" max="5" value="0"><span id="textCorrectionLabel">0px</span>
+  中塗り濃さ: <input type="range" id="fillOpacitySlider" min="10" max="100" value="100"><span id="fillOpacityLabel">100%</span>
+  重ね回数: <input type="range" id="fillRepeatSlider" min="1" max="5" value="4"><span id="fillRepeatLabel">4</span>
+  アンチエイリアス: <input type="checkbox" id="aaSwitch" checked>
+  外周線: <input type="checkbox" id="strokeSwitch">
+  外周太さ: <input type="range" id="strokeWidthSlider" min="1" max="10" value="1"><span id="strokeWidthLabel">1</span>
+ </div>
 
-  <!-- 3行目：設定保存/読み込み -->
-  <div class="controls controls-row">
-    <button id="exportSettingsBtn">設定を保存</button>
-    <input type="file" id="importSettingsInput" accept=".json">
-  </div>
+ <!-- 3行目：設定保存/読み込み -->
+ <div class="controls controls-row">
+  <button id="exportSettingsBtn">設定を保存</button>
+  <input type="file" id="importSettingsInput" accept=".json">
+ </div>
 
-  <canvas id="goshuinCanvas"></canvas>
+ <canvas id="goshuinCanvas"></canvas>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.11.0/jszip.min.js"></script>
@@ -142,99 +142,99 @@ const strokeSwitch = document.getElementById("strokeSwitch");
 const yearSelect = document.getElementById("yearSelect");
 const nowYear = new Date().getFullYear();
 for (let y = nowYear - 4; y <= nowYear + 5; y++) {
-  const option = document.createElement("option");
-  option.value = y;
-  option.textContent = y + "年";
-  if (y === nowYear) option.selected = true;
-  yearSelect.appendChild(option);
+ const option = document.createElement("option");
+ option.value = y;
+ option.textContent = y + "年";
+ if (y === nowYear) option.selected = true;
+ yearSelect.appendChild(option);
 }
 
 // 漢数字変換
 const kan = ["〇","一","二","三","四","五","六","七","八","九"];
 function toKanji(n) {
-  if (n <= 9) return kan[n];
-  if (n === 10) return "十";
-  if (n < 20) return "十" + (n % 10 === 0 ? "" : kan[n % 10]);
-  if (n < 30) return "二十" + (n % 10 === 0 ? "" : kan[n % 10]);
-  if (n < 40) return "三十" + (n % 10 === 0 ? "" : kan[n % 10]);
-  return ""; 
+ if (n <= 9) return kan[n];
+ if (n === 10) return "十";
+ if (n < 20) return "十" + (n % 10 === 0 ? "" : kan[n % 10]);
+ if (n < 30) return "二十" + (n % 10 === 0 ? "" : kan[n % 10]);
+ if (n < 40) return "三十" + (n % 10 === 0 ? "" : kan[n % 10]);
+ return "";
 }
 
 function getJapaneseDate(year, month) {
-  const y = year - 2018;
-  const yearStr = y === 1 ? "令和元年" : "令和" + toKanji(y) + "年";
-  const monthStr = toKanji(month) + "月";
-  return yearStr + monthStr + "吉日";
+ const y = year - 2018;
+ const yearStr = y === 1 ? "令和元年" : "令和" + toKanji(y) + "年";
+ const monthStr = toKanji(month) + "月";
+ return yearStr + monthStr + "吉日";
 }
 
 // 全文字描画
 function drawVertical(text, x, y, lh, correction=0) {
-  const opacity = parseInt(fillOpacitySlider.value,10)/100;
-  const repeat = parseInt(fillRepeatSlider.value,10);
-  const strokeWidth = parseInt(strokeWidthSlider.value,10);
+ const opacity = parseInt(fillOpacitySlider.value,10)/100;
+ const repeat = parseInt(fillRepeatSlider.value,10);
+ const strokeWidth = parseInt(strokeWidthSlider.value,10);
 
-  ctx.lineWidth = strokeWidth;
-  ctx.strokeStyle = "#000";
-  ctx.fillStyle = `rgba(0,0,0,${opacity})`;
+ ctx.lineWidth = strokeWidth;
+ ctx.strokeStyle = "#000";
+ ctx.fillStyle = `rgba(0,0,0,${opacity})`;
 
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    let size = parseInt(ctx.font.match(/\d+/)[0]);
-    ctx.font = ctx.font.replace(/\d+px/, (size+correction)+"px");
+ for (let i = 0; i < text.length; i++) {
+  const ch = text[i];
+  let size = parseInt(ctx.font.match(/\d+/)[0]);
+  ctx.font = ctx.font.replace(/\d+px/, (size+correction)+"px");
 
-    // 中塗り複数回
-    for(let r=0; r<repeat; r++) ctx.fillText(ch, x, y + i*lh);
+  // 中塗り複数回
+  for(let r=0; r<repeat; r++) ctx.fillText(ch, x, y + i*lh);
 
-    // 外周線
-    if(strokeSwitch.checked) ctx.strokeText(ch, x, y + i*lh);
+  // 外周線
+  if(strokeSwitch.checked) ctx.strokeText(ch, x, y + i*lh);
 
-    ctx.font = ctx.font.replace(/\d+px/, size+"px");
-  }
+  ctx.font = ctx.font.replace(/\d+px/, size+"px");
+ }
 }
 
 async function drawMonth(month, year) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = templateUrl;
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(img,0,0);
+ return new Promise(resolve => {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = templateUrl;
+  img.onload = () => {
+   canvas.width = img.width;
+   canvas.height = img.height;
+   ctx.clearRect(0,0,canvas.width,canvas.height);
+   ctx.drawImage(img,0,0);
 
-      ctx.imageSmoothingEnabled = aaSwitch.checked;
+   ctx.imageSmoothingEnabled = aaSwitch.checked;
 
-      const dateStr = getJapaneseDate(year, month);
-      let size = parseInt(fontSizeSlider.value,10);
-      if(size>60) size=60;
-      const lh = size*1.15;
-      const x = parseInt(posXSlider.value,10);
-      const y = parseInt(posYSlider.value,10);
-      const correction = parseInt(textCorrectionSlider.value,10);
+   const dateStr = getJapaneseDate(year, month);
+   let size = parseInt(fontSizeSlider.value,10);
+   if(size>60) size=60;
+   const lh = size*1.15;
+   const x = parseInt(posXSlider.value,10);
+   const y = parseInt(posYSlider.value,10);
+   const correction = parseInt(textCorrectionSlider.value,10);
 
-      ctx.font = `bold ${size}px 'KouzanBrush'`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      drawVertical(dateStr, x, y, lh, correction);
-      resolve();
-    };
-  });
+   ctx.font = `bold ${size}px 'KouzanBrush'`;
+   ctx.textAlign = "center";
+   ctx.textBaseline = "top";
+   drawVertical(dateStr, x, y, lh, correction);
+   resolve();
+  };
+ });
 }
 
 // スライダ・チェック反映
 const controls = [
-  [fontSizeSlider,fontSizeLabel,"px"],
-  [textCorrectionSlider,textCorrectionLabel,"px"],
-  [fillOpacitySlider,fillOpacityLabel,"%"],
-  [fillRepeatSlider,fillRepeatLabel,""],
-  [strokeWidthSlider,strokeWidthLabel,""],
-  [posXSlider,posXLabel,"px"],
-  [posYSlider,posYLabel,"px"]
+ [fontSizeSlider,fontSizeLabel,"px"],
+ [textCorrectionSlider,textCorrectionLabel,"px"],
+ [fillOpacitySlider,fillOpacityLabel,"%"],
+ [fillRepeatSlider,fillRepeatLabel,""],
+ [strokeWidthSlider,strokeWidthLabel,""],
+ [posXSlider,posXLabel,"px"],
+ [posYSlider,posYLabel,"px"]
 ];
 
 controls.forEach(([slider,label,suffix])=>{
-  slider.oninput = ()=>{ label.textContent = slider.value+suffix; drawMonth(currentMonth,getSelectedYear()); };
+ slider.oninput = ()=>{ label.textContent = slider.value+suffix; drawMonth(currentMonth,getSelectedYear()); };
 });
 [aaSwitch,strokeSwitch,yearSelect].forEach(el=>el.onchange = ()=>drawMonth(currentMonth,getSelectedYear()));
 
@@ -244,68 +244,85 @@ document.getElementById("nextMonthBtn").onclick = () => { currentMonth = current
 
 // 保存
 document.getElementById("downloadBtn").onclick = async () => {
-  await drawMonth(currentMonth,getSelectedYear());
-  const mm = currentMonth.toString().padStart(2,"0");
-  const a = document.createElement("a");
-  a.href = canvas.toDataURL("image/png");
-  a.download = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
-  a.click();
+ await drawMonth(currentMonth,getSelectedYear());
+ const mm = currentMonth.toString().padStart(2,"0");
+ const a = document.createElement("a");
+ a.href = canvas.toDataURL("image/png");
+ a.download = `KamiyashiroGoshuin${getSelectedYear()}${mm}.png`;
+ a.click();
 };
 
-// 一括 ZIP
+// 一括 ZIP（修正版）
 document.getElementById("downloadAllBtn").onclick = async () => {
   const zip = new JSZip();
   const year = getSelectedYear();
-  for(let m=1;m<=totalMonths;m++){
-    await drawMonth(m,year);
-    const dataURL = canvas.toDataURL("image/png");
-    const base64 = dataURL.split(",")[1];
-    const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2,"0")}.png`;
-    zip.file(filename,base64,{base64:true});
+  const btn = document.getElementById("downloadAllBtn");
+  const originalText = btn.textContent;
+
+  btn.disabled = true;
+  btn.textContent = "生成中...";
+
+  try {
+    for (let m = 1; m <= totalMonths; m++) {
+      await drawMonth(m, year);
+      const dataURL = canvas.toDataURL("image/png");
+      const base64 = dataURL.split(",")[1];
+      const filename = `KamiyashiroGoshuin${year}${m.toString().padStart(2, "0")}.png`;
+      zip.file(filename, base64, { base64: true });
+
+      btn.textContent = `生成中... (${m}/12)`;
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, `KamiyashiroGoshuin${year}.zip`);
+  } catch (err) {
+    console.error(err);
+    alert("一括保存中にエラーが発生しました。ブラウザのコンソールを確認してください。");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
-  const content = await zip.generateAsync({type:"blob"});
-  saveAs(content, `KamiyashiroGoshuin${year}.zip`);
 };
 
 // 設定の書き出し
 document.getElementById("exportSettingsBtn").onclick = ()=>{
-  const json = JSON.stringify({
-    fontSize: fontSizeSlider.value,
-    textCorrection: textCorrectionSlider.value,
-    fillOpacity: fillOpacitySlider.value,
-    fillRepeat: fillRepeatSlider.value,
-    stroke: strokeSwitch.checked,
-    strokeWidth: strokeWidthSlider.value,
-    aa: aaSwitch.checked,
-    posX: posXSlider.value,
-    posY: posYSlider.value
-  });
-  const blob = new Blob([json],{type:"application/json"});
-  saveAs(blob,"goshuin_settings.json");
+ const json = JSON.stringify({
+  fontSize: fontSizeSlider.value,
+  textCorrection: textCorrectionSlider.value,
+  fillOpacity: fillOpacitySlider.value,
+  fillRepeat: fillRepeatSlider.value,
+  stroke: strokeSwitch.checked,
+  strokeWidth: strokeWidthSlider.value,
+  aa: aaSwitch.checked,
+  posX: posXSlider.value,
+  posY: posYSlider.value
+ });
+ const blob = new Blob([json],{type:"application/json"});
+ saveAs(blob,"goshuin_settings.json");
 };
 
 // 設定の読み込み
 document.getElementById("importSettingsInput").onchange = e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = event=>{
-    const s = JSON.parse(event.target.result);
-    fontSizeSlider.value = s.fontSize;
-    textCorrectionSlider.value = s.textCorrection;
-    fillOpacitySlider.value = s.fillOpacity;
-    fillRepeatSlider.value = s.fillRepeat;
-    strokeSwitch.checked = s.stroke;
-    strokeWidthSlider.value = s.strokeWidth;
-    aaSwitch.checked = s.aa;
-    posXSlider.value = s.posX;
-    posYSlider.value = s.posY;
+ const file = e.target.files[0];
+ if(!file) return;
+ const reader = new FileReader();
+ reader.onload = event=>{
+  const s = JSON.parse(event.target.result);
+  fontSizeSlider.value = s.fontSize;
+  textCorrectionSlider.value = s.textCorrection;
+  fillOpacitySlider.value = s.fillOpacity;
+  fillRepeatSlider.value = s.fillRepeat;
+  strokeSwitch.checked = s.stroke;
+  strokeWidthSlider.value = s.strokeWidth;
+  aaSwitch.checked = s.aa;
+  posXSlider.value = s.posX;
+  posYSlider.value = s.posY;
 
-    // ラベル更新
-    controls.forEach(([slider,label,suffix])=>{ label.textContent = slider.value+suffix; });
-    drawMonth(currentMonth,getSelectedYear());
-  };
-  reader.readAsText(file);
+  // ラベル更新
+  controls.forEach(([slider,label,suffix])=>{ label.textContent = slider.value+suffix; });
+  drawMonth(currentMonth,getSelectedYear());
+ };
+ reader.readAsText(file);
 };
 
 function getSelectedYear(){return parseInt(yearSelect.value,10);}
