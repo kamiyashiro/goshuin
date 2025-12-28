@@ -36,7 +36,7 @@ canvas { border: 4px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backgr
 .template-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .template-thumb.selected { border-color: #d40000; box-shadow: 0 0 15px #d40000; }
 .delete-btn { position: absolute; top: 0; right: 0; background: rgba(255,0,0,0.8); color: white; border: none; width: 30px; height: 30px; cursor: pointer; font-size: 18px; }
-button.big-btn { padding: 18px 30px; font-size: 19px; background: #d40000; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 15px; white-space: pre-line; line-height: 1.4; }
+button.big-btn { padding: 18px 40px; font-size: 18px; background: #d40000; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 15px; width: 300px; }
 button.big-btn:hover { background: #b00000; }
 #version { margin-top: 50px; font-size: 16px; color: #666; }
 </style>
@@ -183,16 +183,15 @@ button.big-btn:hover { background: #b00000; }
 
  <div id="imageSave" class="tab-content">
   <h2 style="color:#d40000; margin-bottom:30px;">御朱印画像の保存</h2>
-  <button class="big-btn" id="downloadBtn">単体保存\n(現在の月)</button>
-  <button class="big-btn" id="downloadAllBtn">12ヶ月一括\nZIP保存</button>
+  <button class="big-btn" id="downloadBtn">単体保存 (現在の月)</button>
+  <button class="big-btn" id="downloadAllBtn">12ヶ月一括 ZIP保存</button>
  </div>
 
  <div id="configSave" class="tab-content">
   <h2 style="color:#d40000; margin-bottom:30px;">設定の保存・読み込み</h2>
-  <button class="big-btn" id="saveSettingsBtn">設定保存\n(JSONファイル)</button>
-  <br>
+  <button class="big-btn" id="saveSettingsBtn">設定保存 (JSONファイル)</button>
+  <button class="big-btn" onclick="document.getElementById('loadSettingsUpload').click();">設定読み込み (JSONファイル)</button>
   <input type="file" id="loadSettingsUpload" accept=".json" style="display:none;">
-  <button class="big-btn" onclick="document.getElementById('loadSettingsUpload').click();">設定読み込み\n(JSONファイル)</button>
  </div>
 
  <canvas id="goshuinCanvas" width="512" height="512"></canvas>
@@ -284,7 +283,7 @@ document.getElementById('stampUpload').onchange = e => {
   }
 };
 
-// すべてのrangeスライダーを統一管理（これで朱印サイズ・回転も完璧に反応）
+// すべてのrangeスライダーを統一管理（朱印サイズ・回転も完璧にリアルタイム反映）
 document.querySelectorAll('input[type="range"]').forEach(slider => {
   const valSpan = document.getElementById(slider.id + 'Val');
   slider.oninput = () => {
@@ -300,7 +299,7 @@ document.querySelectorAll('input[type="range"]').forEach(slider => {
 
 // その他のイベント
 document.querySelectorAll('input[type="checkbox"], input[type="text"], select').forEach(el => {
-  if (!el.id.endsWith('FontCustom')) el.onchange = drawAll;
+  if (!el.id.includes('FontCustom')) el.onchange = drawAll;
 });
 
 // 朱印重ね順
@@ -505,7 +504,7 @@ document.getElementById('downloadAllBtn').onclick = async () => {
     btn.textContent = `生成中... (${m}/12)`;
   }
   saveAs(await zip.generateAsync({type:"blob"}), `Goshuin_${year}_All.zip`);
-  btn.disabled = false; btn.textContent = "12ヶ月一括\nZIP保存";
+  btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
 };
 
 // 設定保存・読み込み
