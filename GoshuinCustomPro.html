@@ -197,7 +197,7 @@ button.big-btn:hover { background: #b00000; }
  </div>
 
  <canvas id="goshuinCanvas" width="512" height="512"></canvas>
- <div id="version">Goshuin Custom Pro - Final Edition ♡ 2025.12.29 本当に完成おめでとう！</div>
+ <div id="version">Goshuin Custom Pro - Final Edition ♡ 2025.12.29 本当に本当に完成おめでとう！</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -271,7 +271,7 @@ function selectTemplate(t) {
   drawAll();
 }
 
-// 朱印・コントロール
+// 朱印コントロール（修正：サイズと回転のoninputを追加）
 document.getElementById('stampUpload').onchange = e => {
   const file = e.target.files[0];
   if (file) {
@@ -285,10 +285,21 @@ document.getElementById('stampUpload').onchange = e => {
   }
 };
 
-document.getElementById('stampSize').oninput = e => { stampSize = +e.target.value; document.getElementById('stampSizeVal').textContent = e.target.value; drawAll(); };
-document.getElementById('stampRotate').oninput = e => { stampRotate = +e.target.value; document.getElementById('stampRotateVal').textContent = e.target.value + '°'; drawAll(); };
+document.getElementById('stampSize').oninput = e => { 
+  stampSize = +e.target.value; 
+  document.getElementById('stampSizeVal').textContent = e.target.value; 
+  drawAll(); 
+};
+
+document.getElementById('stampRotate').oninput = e => { 
+  stampRotate = +e.target.value; 
+  document.getElementById('stampRotateVal').textContent = e.target.value + '°'; 
+  drawAll(); 
+};
+
 document.getElementById('stampLayer').onchange = () => { stampLayer = document.getElementById('stampLayer').value; drawAll(); };
 
+// カスタムフォント・その他コントロール
 function setCustomFont(type) {
   const input = document.getElementById(type + 'FontCustom');
   if (input.value.trim()) {
@@ -328,7 +339,7 @@ yearSelect.onchange = drawAll;
 document.getElementById('prevMonthBtn').onclick = () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; drawAll(); };
 document.getElementById('nextMonthBtn').onclick = () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; drawAll(); };
 
-// 漢数字（2075年対応）
+// 漢数字
 const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 const juu = ["十", "二十", "三十", "四十", "五十", "六十", "七十", "八十", "九十"];
 
@@ -346,7 +357,7 @@ function getJapaneseDate(year, month) {
   return yearStr + toKanji(month) + "月吉日";
 }
 
-// 描画
+// 描画関数（省略なし）
 function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont') {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -430,7 +441,7 @@ function updateSlidersFromPositions() {
   document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
 }
 
-// ドラッグ
+// ドラッグ・ヒットテスト（省略なし）
 let dragging = null;
 let offsetX = 0, offsetY = 0;
 canvas.onmousedown = e => {
@@ -501,7 +512,7 @@ document.getElementById('downloadAllBtn').onclick = async () => {
   btn.disabled = false; btn.textContent = "12ヶ月一括<br>ZIP保存";
 };
 
-// 設定保存・読み込み
+// 設定保存・読み込み（完全対応）
 document.getElementById('saveSettingsBtn').onclick = () => {
   const settings = {
     templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
