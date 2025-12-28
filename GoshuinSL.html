@@ -236,7 +236,7 @@ const controls = [
 controls.forEach(([slider,label,suffix])=>{
   slider.oninput = ()=>{ label.textContent = slider.value+suffix; drawMonth(currentMonth,getSelectedYear()); };
 });
-[aaSwitch,strokeSwitch,yearSelect].forEach(el=>el.onchange = ()=>drawMonth(currentMonth,getSelectedYear()));
+[aaSwitch,strokeSwitch,yearSelect].forEach(el=>el.onchange = ()=>drawMonth(currentMonth,getSelectedYear());});
 
 // 月切替
 document.getElementById("prevMonthBtn").onclick = () => { currentMonth = currentMonth>1?currentMonth-1:totalMonths; drawMonth(currentMonth,getSelectedYear()); };
