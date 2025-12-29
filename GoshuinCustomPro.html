@@ -28,10 +28,10 @@ h1 { color: #d40000; font-size: 32px; margin-bottom: 20px; }
 input[type="range"] { width: 180px; }
 span { min-width: 60px; display: inline-block; text-align: left; font-weight: bold; }
 canvas { border: 4px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: white; margin-top: 30px; cursor: move; }
-#template-list { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
-.template-thumb { width: 120px; height: 120px; border: 3px solid #ccc; cursor: pointer; position: relative; border-radius: 10px; overflow: hidden; }
-.template-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.template-thumb.selected { border-color: #d40000; box-shadow: 0 0 15px #d40000; }
+#template-list, #stamp-list { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+.template-thumb, .stamp-thumb { width: 120px; height: 120px; border: 3px solid #ccc; cursor: pointer; position: relative; border-radius: 10px; overflow: hidden; }
+.template-thumb.selected, .stamp-thumb.selected { border-color: #d40000; box-shadow: 0 0 15px #d40000; }
+.template-thumb img, .stamp-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .delete-btn { position: absolute; top: 0; right: 0; background: rgba(255,0,0,0.8); color: white; border: none; width: 30px; height: 30px; cursor: pointer; font-size: 18px; }
 button.big-btn { padding: 18px 40px; font-size: 18px; background: #d40000; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 15px; width: 300px; }
 button.big-btn:hover { background: #b00000; }
@@ -170,17 +170,14 @@ button.big-btn:hover { background: #b00000; }
 
   <div id="stamp" class="tab-content">
     <div class="controls-row"><label>表示:</label> <input type="checkbox" id="stampEnabled" checked></div>
-    <p>朱印画像アップロード (透過PNG推奨)</p>
-    <input type="file" id="stampUpload" accept="image/*" style="padding:10px;font-size:16px;">
+    <p>朱印画像アップロード (透過PNG推奨・複数可)</p>
+    <input type="file" id="stampUpload" accept="image/*" multiple style="padding:10px;font-size:16px;">
     <div class="controls-row">
       <label>サイズ:</label> <input type="range" id="stampSize" min="50" max="300" value="150"><span id="stampSizeVal">150</span>
       <label>回転:</label> <input type="range" id="stampRotate" min="-180" max="180" value="0"><span id="stampRotateVal">0°</span>
-      <label>重ね順:</label> <select id="stampLayer">
-        <option value="top">最上</option>
-        <option value="bottom">背景の上</option>
-      </select>
     </div>
-    <p>キャンバス上でクリック＆ドラッグして位置調整してください</p>
+    <div id="stamp-list"></div>
+    <p>リストから朱印を選択 → スライダーで調整 → キャンバスでドラッグ</p>
   </div>
 
   <div id="imageSave" class="tab-content">
@@ -208,8 +205,8 @@ const ctx = canvas.getContext('2d');
 let currentMonth = new Date().getMonth() + 1;
 let templates = [];
 let selectedTemplate = null;
-let stampImage = null;
-let stampX = 256, stampY = 256, stampSize = 150, stampRotate = 0, stampLayer = 'top';
+let stamps = [];
+let selectedStampIndex = null;
 let dateFont = 'KouzanBrushFont';
 let hoheiFont = 'KouzanBrushFont';
 let jinjaFont = 'KouzanBrushFont';
@@ -217,6 +214,8 @@ let dateX = 72, dateY = 36;
 let hoheiX = 457, hoheiY = 46;
 let jinjaX = 258, jinjaY = 50;
 let filePrefix = 'Nameless Shrine';
+let dragging = null;
+let offsetX = 0, offsetY = 0;
 
 // 初期設定
 const defaultSettings = {
@@ -256,15 +255,7 @@ const defaultSettings = {
     "repeat": 4,
     "stroke": false
   },
-  "stamp": {
-    "enabled": true,
-    "dataURL": null,
-    "x": 256,
-    "y": 256,
-    "size": 150,
-    "rotate": 0,
-    "layer": "top"
-  },
+  "stamps": [],
   "currentMonth": new Date().getMonth() + 1,
   "year": new Date().getFullYear(),
   "filePrefix": "Nameless Shrine"
@@ -275,6 +266,10 @@ function applySettings(s) {
   templates = [];
   selectedTemplate = null;
   renderTemplateList();
+
+  stamps = [];
+  selectedStampIndex = null;
+  renderStampList();
 
   document.getElementById('dateEnabled').checked = s.date.enabled;
   dateFont = s.date.font;
@@ -312,13 +307,6 @@ function applySettings(s) {
   document.getElementById('jinjaOpacity').value = s.jinja.opacity; document.getElementById('jinjaOpacityVal').textContent = s.jinja.opacity + '%';
   document.getElementById('jinjaRepeat').value = s.jinja.repeat; document.getElementById('jinjaRepeatVal').textContent = s.jinja.repeat;
   document.getElementById('jinjaStroke').checked = s.jinja.stroke;
-
-  document.getElementById('stampEnabled').checked = s.stamp.enabled;
-  stampX = s.stamp.x; stampY = s.stamp.y; stampSize = s.stamp.size; stampRotate = s.stamp.rotate; stampLayer = s.stamp.layer;
-  document.getElementById('stampSize').value = stampSize; document.getElementById('stampSizeVal').textContent = stampSize;
-  document.getElementById('stampRotate').value = stampRotate; document.getElementById('stampRotateVal').textContent = stampRotate + '°';
-  document.getElementById('stampLayer').value = stampLayer;
-  stampImage = null;
 
   currentMonth = s.currentMonth;
   document.getElementById('yearSelect').value = s.year;
@@ -371,23 +359,6 @@ document.getElementById('templateUpload').addEventListener('change', e => {
   });
 });
 
-// ファイルドラッグ＆ドロップ
-canvas.addEventListener('dragover', e => e.preventDefault());
-canvas.addEventListener('drop', e => {
-  e.preventDefault();
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const id = Date.now() + Math.random();
-      templates.push({id, dataURL: ev.target.result});
-      renderTemplateList();
-      selectTemplate(templates[templates.length - 1]);
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
 function renderTemplateList() {
   const list = document.getElementById('template-list');
   list.innerHTML = '';
@@ -416,17 +387,78 @@ function selectTemplate(t) {
   drawAll();
 }
 
-// 朱印アップロード
+// 朱印アップロード（複数対応）
 document.getElementById('stampUpload').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
+  Array.from(e.target.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new Image();
-      img.onload = () => { stampImage = img; drawAll(); };
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: 256,
+          y: 256,
+          size: 150,
+          rotate: 0
+        });
+        renderStampList();
+        drawAll();
+      };
       img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
+  });
+});
+
+// 朱印リスト表示
+function renderStampList() {
+  const list = document.getElementById('stamp-list');
+  list.innerHTML = '';
+  stamps.forEach((stamp, index) => {
+    const div = document.createElement('div');
+    div.className = 'stamp-thumb' + (selectedStampIndex === index ? ' selected' : '');
+    div.innerHTML = `<img src="${stamp.img.src}"><button class="delete-btn">×</button>`;
+    div.addEventListener('click', e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        stamps.splice(index, 1);
+        if (selectedStampIndex === index) selectedStampIndex = null;
+        else if (selectedStampIndex > index) selectedStampIndex--;
+        renderStampList();
+        drawAll();
+      } else {
+        selectedStampIndex = index;
+        renderStampList();
+        updateStampControls();
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+// 選択中の朱印コントロール更新
+function updateStampControls() {
+  if (selectedStampIndex === null) return;
+  const s = stamps[selectedStampIndex];
+  document.getElementById('stampSize').value = s.size;
+  document.getElementById('stampSizeVal').textContent = s.size;
+  document.getElementById('stampRotate').value = s.rotate;
+  document.getElementById('stampRotateVal').textContent = s.rotate + '°';
+}
+
+// 朱印コントロール変更
+document.getElementById('stampSize').addEventListener('input', () => {
+  if (selectedStampIndex !== null) {
+    stamps[selectedStampIndex].size = +document.getElementById('stampSize').value;
+    document.getElementById('stampSizeVal').textContent = stamps[selectedStampIndex].size;
+    drawAll();
+  }
+});
+document.getElementById('stampRotate').addEventListener('input', () => {
+  if (selectedStampIndex !== null) {
+    stamps[selectedStampIndex].rotate = +document.getElementById('stampRotate').value;
+    document.getElementById('stampRotateVal').textContent = stamps[selectedStampIndex].rotate + '°';
+    drawAll();
   }
 });
 
@@ -441,8 +473,6 @@ document.querySelectorAll('input[type="range"]').forEach(slider => {
   const valSpan = document.getElementById(slider.id + 'Val');
   slider.addEventListener('input', () => {
     if (valSpan) valSpan.textContent = slider.value + (slider.id.includes('Opacity') ? '%' : slider.id.includes('Rotate') ? '°' : '');
-    if (slider.id === 'stampSize') stampSize = +slider.value;
-    if (slider.id === 'stampRotate') stampRotate = +slider.value;
     updatePositionsFromSliders();
     drawAll();
   });
@@ -452,7 +482,6 @@ document.querySelectorAll('input[type="range"]').forEach(slider => {
 document.querySelectorAll('input[type="checkbox"], input[type="text"], select').forEach(el => {
   if (el.id !== 'filePrefix' && !el.id.includes('FontCustom')) el.addEventListener('change', drawAll);
 });
-document.getElementById('stampLayer').addEventListener('change', () => { stampLayer = document.getElementById('stampLayer').value; drawAll(); });
 
 // カスタムフォント
 function setCustomFont(type) {
@@ -505,14 +534,6 @@ function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, co
   ctx.globalAlpha = 1;
 }
 
-function drawStamp(x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(stampRotate * Math.PI / 180);
-  ctx.drawImage(stampImage, -stampSize / 2, -stampSize / 2, stampSize, stampSize);
-  ctx.restore();
-}
-
 function drawAll() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (selectedTemplate) {
@@ -526,9 +547,15 @@ function drawAll() {
 }
 
 function drawRest() {
-  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'bottom') {
-    ctx.globalCompositeOperation = 'multiply';
-    drawStamp(stampX, stampY);
+  if (document.getElementById('stampEnabled').checked) {
+    stamps.forEach(stamp => {
+      ctx.save();
+      ctx.translate(stamp.x, stamp.y);
+      ctx.rotate(stamp.rotate * Math.PI / 180);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.drawImage(stamp.img, -stamp.size / 2, -stamp.size / 2, stamp.size, stamp.size);
+      ctx.restore();
+    });
     ctx.globalCompositeOperation = 'source-over';
   }
   if (document.getElementById('dateEnabled').checked) {
@@ -546,11 +573,6 @@ function drawRest() {
     drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
       +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
       document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont);
-  }
-  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'top') {
-    ctx.globalCompositeOperation = 'multiply';
-    drawStamp(stampX, stampY);
-    ctx.globalCompositeOperation = 'source-over';
   }
 }
 
@@ -574,22 +596,33 @@ function updateSlidersFromPositions() {
 }
 
 // ドラッグ機能
-let dragging = null;
-let offsetX = 0, offsetY = 0;
-
 canvas.addEventListener('mousedown', e => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
+  // 朱印ヒットテスト（後ろからチェック）
+  for (let i = stamps.length - 1; i >= 0; i--) {
+    const s = stamps[i];
+    if (document.getElementById('stampEnabled').checked && Math.hypot(mx - s.x, my - s.y) < s.size / 2) {
+      selectedStampIndex = i;
+      renderStampList();
+      updateStampControls();
+      dragging = 'stamp';
+      offsetX = mx - s.x;
+      offsetY = my - s.y;
+      return;
+    }
+  }
+
+  // 文字ヒットテスト
   if (document.getElementById('dateEnabled').checked && hitTest(mx, my, dateX, dateY, getTextBounds('date'))) dragging = 'date';
   else if (document.getElementById('hoheiEnabled').checked && hitTest(mx, my, hoheiX, hoheiY, getTextBounds('hohei'))) dragging = 'hohei';
   else if (document.getElementById('jinjaEnabled').checked && hitTest(mx, my, jinjaX, jinjaY, getTextBounds('jinja'))) dragging = 'jinja';
-  else if (stampImage && document.getElementById('stampEnabled').checked && Math.hypot(mx - stampX, my - stampY) < stampSize / 2) dragging = 'stamp';
 
-  if (dragging) {
-    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : dragging === 'jinja' ? jinjaX : stampX);
-    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : dragging === 'jinja' ? jinjaY : stampY);
+  if (dragging && dragging !== 'stamp') {
+    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : jinjaX);
+    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : jinjaY);
   }
 });
 
@@ -604,7 +637,7 @@ canvas.addEventListener('mousemove', e => {
   if (dragging === 'date') { dateX = nx; dateY = ny; }
   else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
   else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
-  else if (dragging === 'stamp') { stampX = nx; stampY = ny; }
+  else if (dragging === 'stamp' && selectedStampIndex !== null) { stamps[selectedStampIndex].x = nx; stamps[selectedStampIndex].y = ny; }
 
   updateSlidersFromPositions();
   drawAll();
@@ -655,7 +688,7 @@ document.getElementById('downloadAllBtn').addEventListener('click', async () => 
   btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
 });
 
-// 設定保存・読み込み
+// 設定保存・読み込み（複数朱印対応）
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   const settings = {
     templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
@@ -663,7 +696,7 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
     date: { enabled: document.getElementById('dateEnabled').checked, font: dateFont, x: dateX, y: dateY, size: +document.getElementById('dateSize').value, correction: +document.getElementById('dateCorrection').value, opacity: +document.getElementById('dateOpacity').value, repeat: +document.getElementById('dateRepeat').value, stroke: document.getElementById('dateStroke').checked, strokeWidth: +document.getElementById('dateStrokeWidth').value },
     hohei: { enabled: document.getElementById('hoheiEnabled').checked, font: hoheiFont, x: hoheiX, y: hoheiY, size: +document.getElementById('hoheiSize').value, opacity: +document.getElementById('hoheiOpacity').value, repeat: +document.getElementById('hoheiRepeat').value, stroke: document.getElementById('hoheiStroke').checked },
     jinja: { enabled: document.getElementById('jinjaEnabled').checked, text: document.getElementById('jinjaText').value, color: document.getElementById('jinjaColor').value, font: jinjaFont, x: jinjaX, y: jinjaY, size: +document.getElementById('jinjaSize').value, opacity: +document.getElementById('jinjaOpacity').value, repeat: +document.getElementById('jinjaRepeat').value, stroke: document.getElementById('jinjaStroke').checked },
-    stamp: { enabled: document.getElementById('stampEnabled').checked, dataURL: stampImage ? stampImage.src : null, x: stampX, y: stampY, size: stampSize, rotate: stampRotate, layer: stampLayer },
+    stamps: stamps.map(s => ({dataURL: s.img.src, x: s.x, y: s.y, size: s.size, rotate: s.rotate})),
     currentMonth: currentMonth,
     year: +document.getElementById('yearSelect').value,
     filePrefix: filePrefix
@@ -679,6 +712,22 @@ document.getElementById('loadSettingsUpload').addEventListener('change', e => {
   reader.onload = ev => {
     const s = JSON.parse(ev.target.result);
     applySettings(s);
+    // stampsのdataURLからImageオブジェクト再作成
+    s.stamps.forEach(stampData => {
+      const img = new Image();
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: stampData.x,
+          y: stampData.y,
+          size: stampData.size,
+          rotate: stampData.rotate
+        });
+        renderStampList();
+        drawAll();
+      };
+      img.src = stampData.dataURL;
+    });
   };
   reader.readAsText(file);
 });
