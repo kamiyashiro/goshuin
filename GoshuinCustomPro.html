@@ -346,7 +346,7 @@ window.onload = () => {
   drawAll();
 };
 
-// タブ切り替え（これが正しく登録されていなかった！）
+// タブ切り替え
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -371,7 +371,7 @@ document.getElementById('templateUpload').addEventListener('change', e => {
   });
 });
 
-// ファイルドラッグ＆ドロップ対応（背景画像をキャンバスにドラッグ）
+// ファイルドラッグ＆ドロップ
 canvas.addEventListener('dragover', e => e.preventDefault());
 canvas.addEventListener('drop', e => {
   e.preventDefault();
@@ -469,10 +469,219 @@ function setCustomFont(type) {
 document.getElementById('prevMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; drawAll(); });
 document.getElementById('nextMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; drawAll(); });
 
-// 漢数字変換・描画関数・ドラッグ機能・保存機能はすべて正常に含まれております。
+// 漢数字変換
+const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+const juu = ["十", "二十", "三十", "四十", "五十", "六十", "七十", "八十", "九十"];
 
-// これで本当に完璧です！！
+function toKanji(n) {
+  if (n === 0) return "〇";
+  if (n <= 9) return kan[n];
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  return (tens > 0 ? juu[tens - 1] : "") + (ones > 0 ? kan[ones] : "");
+}
 
+function getJapaneseDate(year, month) {
+  const reiwaYear = year - 2018;
+  const yearStr = reiwaYear === 1 ? "令和元年" : "令和" + toKanji(reiwaYear) + "年";
+  return yearStr + toKanji(month) + "月吉日";
+}
+
+// 描画関数
+function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont') {
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = color;
+  ctx.globalAlpha = opacity / 100;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = strokeWidth;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const curSize = size + correction;
+    ctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
+    for (let r = 0; r < repeat; r++) ctx.fillText(ch, x, y + i * size * 1.15);
+    if (stroke) ctx.strokeText(ch, x, y + i * size * 1.15);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawStamp(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(stampRotate * Math.PI / 180);
+  ctx.drawImage(stampImage, -stampSize / 2, -stampSize / 2, stampSize, stampSize);
+  ctx.restore();
+}
+
+function drawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (selectedTemplate) {
+    const img = new Image();
+    img.src = selectedTemplate.dataURL;
+    img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); };
+    if (img.complete && img.naturalHeight !== 0) { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); }
+    return;
+  }
+  drawRest();
+}
+
+function drawRest() {
+  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'bottom') {
+    ctx.globalCompositeOperation = 'multiply';
+    drawStamp(stampX, stampY);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  if (document.getElementById('dateEnabled').checked) {
+    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
+    drawVertical(dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
+      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
+      +document.getElementById('dateCorrection').value, '#000', dateFont);
+  }
+  if (document.getElementById('hoheiEnabled').checked) {
+    drawVertical('奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
+      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont);
+  }
+  if (document.getElementById('jinjaEnabled').checked) {
+    const color = document.getElementById('jinjaColor').value;
+    drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
+      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
+      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont);
+  }
+  if (stampImage && document.getElementById('stampEnabled').checked && stampLayer === 'top') {
+    ctx.globalCompositeOperation = 'multiply';
+    drawStamp(stampX, stampY);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+}
+
+// 位置更新
+function updatePositionsFromSliders() {
+  dateX = +document.getElementById('dateX').value;
+  dateY = +document.getElementById('dateY').value;
+  hoheiX = +document.getElementById('hoheiX').value;
+  hoheiY = +document.getElementById('hoheiY').value;
+  jinjaX = +document.getElementById('jinjaX').value;
+  jinjaY = +document.getElementById('jinjaY').value;
+}
+
+function updateSlidersFromPositions() {
+  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
+  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
+  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
+  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
+  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
+  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
+}
+
+// ドラッグ機能
+let dragging = null;
+let offsetX = 0, offsetY = 0;
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (document.getElementById('dateEnabled').checked && hitTest(mx, my, dateX, dateY, getTextBounds('date'))) dragging = 'date';
+  else if (document.getElementById('hoheiEnabled').checked && hitTest(mx, my, hoheiX, hoheiY, getTextBounds('hohei'))) dragging = 'hohei';
+  else if (document.getElementById('jinjaEnabled').checked && hitTest(mx, my, jinjaX, jinjaY, getTextBounds('jinja'))) dragging = 'jinja';
+  else if (stampImage && document.getElementById('stampEnabled').checked && Math.hypot(mx - stampX, my - stampY) < stampSize / 2) dragging = 'stamp';
+
+  if (dragging) {
+    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : dragging === 'jinja' ? jinjaX : stampX);
+    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : dragging === 'jinja' ? jinjaY : stampY);
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const nx = mx - offsetX;
+  const ny = my - offsetY;
+
+  if (dragging === 'date') { dateX = nx; dateY = ny; }
+  else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
+  else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
+  else if (dragging === 'stamp') { stampX = nx; stampY = ny; }
+
+  updateSlidersFromPositions();
+  drawAll();
+});
+
+canvas.addEventListener('mouseup', () => { dragging = null; });
+canvas.addEventListener('mouseleave', () => { dragging = null; });
+
+function hitTest(mx, my, x, y, bounds) {
+  return mx >= x - bounds.width / 2 && mx <= x + bounds.width / 2 && my >= y && my <= y + bounds.height;
+}
+
+function getTextBounds(type) {
+  let text, size, font = dateFont;
+  if (type === 'date') { text = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth); size = +document.getElementById('dateSize').value; font = dateFont; }
+  else if (type === 'hohei') { text = '奉拝'; size = +document.getElementById('hoheiSize').value; font = hoheiFont; }
+  else if (type === 'jinja') { text = document.getElementById('jinjaText').value || ' '; size = +document.getElementById('jinjaSize').value; font = jinjaFont; }
+  ctx.font = `bold ${size}px "${font}", 'Yuji Syuku', sans-serif`;
+  const width = Math.max(...[...text].map(ch => ctx.measureText(ch).width));
+  const height = text.length * size * 1.15;
+  return {width, height};
+}
+
+// 画像保存
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const prefix = filePrefix || 'Nameless Shrine';
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `${prefix}_${document.getElementById('yearSelect').value}_${currentMonth.toString().padStart(2,'0')}.png`;
+  a.click();
+});
+
+document.getElementById('downloadAllBtn').addEventListener('click', async () => {
+  const prefix = filePrefix || 'Nameless Shrine';
+  const zip = new JSZip();
+  const year = +document.getElementById('yearSelect').value;
+  const btn = document.getElementById('downloadAllBtn');
+  btn.disabled = true; btn.textContent = "生成中...";
+  for (let m = 1; m <= 12; m++) {
+    currentMonth = m;
+    drawAll();
+    await new Promise(r => setTimeout(r, 200));
+    const dataURL = canvas.toDataURL('image/png');
+    zip.file(`${prefix}_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
+    btn.textContent = `生成中... (${m}/12)`;
+  }
+  saveAs(await zip.generateAsync({type:"blob"}), `${prefix}_${year}_All.zip`);
+  btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
+});
+
+// 設定保存・読み込み
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  const settings = {
+    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
+    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
+    date: { enabled: document.getElementById('dateEnabled').checked, font: dateFont, x: dateX, y: dateY, size: +document.getElementById('dateSize').value, correction: +document.getElementById('dateCorrection').value, opacity: +document.getElementById('dateOpacity').value, repeat: +document.getElementById('dateRepeat').value, stroke: document.getElementById('dateStroke').checked, strokeWidth: +document.getElementById('dateStrokeWidth').value },
+    hohei: { enabled: document.getElementById('hoheiEnabled').checked, font: hoheiFont, x: hoheiX, y: hoheiY, size: +document.getElementById('hoheiSize').value, opacity: +document.getElementById('hoheiOpacity').value, repeat: +document.getElementById('hoheiRepeat').value, stroke: document.getElementById('hoheiStroke').checked },
+    jinja: { enabled: document.getElementById('jinjaEnabled').checked, text: document.getElementById('jinjaText').value, color: document.getElementById('jinjaColor').value, font: jinjaFont, x: jinjaX, y: jinjaY, size: +document.getElementById('jinjaSize').value, opacity: +document.getElementById('jinjaOpacity').value, repeat: +document.getElementById('jinjaRepeat').value, stroke: document.getElementById('jinjaStroke').checked },
+    stamp: { enabled: document.getElementById('stampEnabled').checked, dataURL: stampImage ? stampImage.src : null, x: stampX, y: stampY, size: stampSize, rotate: stampRotate, layer: stampLayer },
+    currentMonth: currentMonth,
+    year: +document.getElementById('yearSelect').value,
+    filePrefix: filePrefix
+  };
+  const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
+  saveAs(blob, 'goshuin_settings.json');
+});
+
+document.getElementById('loadSettingsUpload').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const s = JSON.parse(ev.target.result);
+    applySettings(s);
+  };
+  reader.readAsText(file);
+});
 </script>
 </body>
 </html>
