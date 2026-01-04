@@ -243,7 +243,7 @@ button.big-btn:hover { background: #b00000; }
   <div id="previewModal">
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
-  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0241</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0247</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -576,17 +576,19 @@ function fitBackground() {
   const img = new Image();
   img.src = selectedTemplate.dataURL;
   img.onload = () => {
-    const canvasRatio = 512 / 512;
+    const canvasRatio = 1;
     const imgRatio = img.width / img.height;
+    let newScale;
     if (imgRatio > canvasRatio) {
-      backgroundScale = 512 / img.height;
+      newScale = 512 / img.height;
     } else {
-      backgroundScale = 512 / img.width;
+      newScale = 512 / img.width;
     }
+    backgroundScale = newScale;
     backgroundX = 0;
     backgroundY = 0;
-    document.getElementById('backgroundScale').value = backgroundScale * 100;
-    document.getElementById('backgroundScaleVal').textContent = Math.round(backgroundScale * 100) + '%';
+    document.getElementById('backgroundScale').value = Math.round(newScale * 100);
+    document.getElementById('backgroundScaleVal').textContent = Math.round(newScale * 100) + '%';
     document.getElementById('backgroundX').value = 0;
     document.getElementById('backgroundXVal').textContent = 0;
     document.getElementById('backgroundY').value = 0;
@@ -595,6 +597,417 @@ function fitBackground() {
     drawAll();
   };
 }
+
+function renderTemplateList() {
+  const list = document.getElementById('template-list');
+  list.innerHTML = '';
+  templates.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'template-thumb' + (selectedTemplate && selectedTemplate.id === t.id ? ' selected' : '');
+    div.innerHTML = `<img src="${t.dataURL}"><button class="delete-btn">×</button>`;
+    div.addEventListener('click', e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        templates = templates.filter(tt => tt.id !== t.id);
+        renderTemplateList();
+        if (selectedTemplate && selectedTemplate.id === t.id) selectedTemplate = null;
+        markUnsaved();
+        drawAll();
+      } else {
+        selectTemplate(t);
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function selectTemplate(t) {
+  selectedTemplate = t;
+  renderTemplateList();
+  markUnsaved();
+  drawAll();
+}
+
+function renderStampList() {
+  const list = document.getElementById('stamp-list');
+  list.innerHTML = '';
+  stamps.forEach((stamp, index) => {
+    const div = document.createElement('div');
+    div.className = 'stamp-thumb' + (selectedStampIndex === index ? ' selected' : '');
+    div.innerHTML = `<img src="${stamp.img.src}"><button class="delete-btn">×</button>`;
+    div.addEventListener('click', e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        stamps.splice(index, 1);
+        if (selectedStampIndex === index) selectedStampIndex = null;
+        else if (selectedStampIndex > index) selectedStampIndex--;
+        renderStampList();
+        markUnsaved();
+        drawAll();
+      } else {
+        selectedStampIndex = index;
+        renderStampList();
+        updateStampControls();
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function updateStampControls() {
+  if (selectedStampIndex === null) return;
+  const s = stamps[selectedStampIndex];
+  document.getElementById('stampSize').value = s.size;
+  document.getElementById('stampSizeVal').textContent = s.size;
+  document.getElementById('stampRotate').value = s.rotate;
+  document.getElementById('stampRotateVal').textContent = s.rotate + '°';
+}
+
+function setCustomFont(type) {
+  const input = document.getElementById(type + 'FontCustom');
+  if (input.value.trim()) {
+    if (type === 'date') dateFont = input.value.trim();
+    if (type === 'hohei') hoheiFont = input.value.trim();
+    if (type === 'jinja') jinjaFont = input.value.trim();
+    markUnsaved();
+    drawAll();
+  }
+}
+
+const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+const juu = ["十", "二十", "三十", "四十", "五十", "六十", "七十", "八十", "九十"];
+function toKanji(n) {
+  if (n === 0) return "〇";
+  if (n <= 9) return kan[n];
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  return (tens > 0 ? juu[tens - 1] : "") + (ones > 0 ? kan[ones] : "");
+}
+function getJapaneseDate(year, month) {
+  const reiwaYear = year - 2018;
+  const yearStr = reiwaYear === 1 ? "令和元年" : "令和" + toKanji(reiwaYear) + "年";
+  return yearStr + toKanji(month) + "月吉日";
+}
+
+function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont', rotate = 0, shadow = false, shadowBlur = 5) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotate * Math.PI / 180);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = color;
+  ctx.globalAlpha = opacity / 100;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = strokeWidth;
+  if (shadow) {
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = shadowBlur;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+  }
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const curSize = size + correction;
+    ctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
+    for (let r = 0; r < repeat; r++) ctx.fillText(ch, 0, i * size * 1.15);
+    if (stroke) for (let r = 0; r < repeat; r++) ctx.strokeText(ch, 0, i * size * 1.15);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawStamp(stamp) {
+  ctx.save();
+  ctx.translate(stamp.x, stamp.y);
+  ctx.rotate(stamp.rotate * Math.PI / 180);
+  ctx.globalAlpha = stampOpacity;
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.drawImage(stamp.img, -stamp.size / 2, -stamp.size / 2, stamp.size, stamp.size);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawGrid() {
+  if (!gridEnabled) return;
+  ctx.save();
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(256, 0);
+  ctx.lineTo(256, 512);
+  ctx.moveTo(0, 256);
+  ctx.lineTo(512, 256);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (selectedTemplate) {
+    const img = new Image();
+    img.src = selectedTemplate.dataURL;
+    img.onload = () => {
+      ctx.save();
+      ctx.translate(256 + backgroundX, 256 + backgroundY);
+      ctx.scale(backgroundScale, backgroundScale);
+      ctx.globalAlpha = backgroundOpacity;
+      ctx.drawImage(img, -256, -256, 512, 512);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      drawRest();
+    };
+    if (img.complete && img.naturalHeight !== 0) {
+      ctx.save();
+      ctx.translate(256 + backgroundX, 256 + backgroundY);
+      ctx.scale(backgroundScale, backgroundScale);
+      ctx.globalAlpha = backgroundOpacity;
+      ctx.drawImage(img, -256, -256, 512, 512);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      drawRest();
+    };
+  } else {
+    drawRest();
+  }
+}
+
+function drawRest() {
+  if (document.getElementById('stampEnabled').checked) {
+    stamps.forEach(stamp => drawStamp(stamp));
+  }
+  if (document.getElementById('dateEnabled').checked) {
+    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
+    drawVertical(dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
+      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
+      +document.getElementById('dateCorrection').value, '#000', dateFont, dateRotate, dateShadow, dateShadowBlur);
+  }
+  if (document.getElementById('hoheiEnabled').checked) {
+    drawVertical('奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
+      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont, hoheiRotate, hoheiShadow, hoheiShadowBlur);
+  }
+  if (document.getElementById('jinjaEnabled').checked) {
+    const color = document.getElementById('jinjaColor').value;
+    drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
+      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
+      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont, jinjaRotate, jinjaShadow, jinjaShadowBlur);
+  }
+  drawGrid();
+}
+
+function updatePositionsFromSliders() {
+  dateX = +document.getElementById('dateX').value;
+  dateY = +document.getElementById('dateY').value;
+  hoheiX = +document.getElementById('hoheiX').value;
+  hoheiY = +document.getElementById('hoheiY').value;
+  jinjaX = +document.getElementById('jinjaX').value;
+  jinjaY = +document.getElementById('jinjaY').value;
+  backgroundX = +document.getElementById('backgroundX').value;
+  backgroundY = +document.getElementById('backgroundY').value;
+}
+
+function updateSlidersFromPositions() {
+  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
+  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
+  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
+  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
+  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
+  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
+  document.getElementById('backgroundX').value = backgroundX; document.getElementById('backgroundXVal').textContent = backgroundX;
+  document.getElementById('backgroundY').value = backgroundY; document.getElementById('backgroundYVal').textContent = backgroundY;
+}
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (let i = stamps.length - 1; i >= 0; i--) {
+    const s = stamps[i];
+    if (document.getElementById('stampEnabled').checked && Math.hypot(mx - s.x, my - s.y) < s.size / 2) {
+      selectedStampIndex = i;
+      renderStampList();
+      updateStampControls();
+      dragging = 'stamp';
+      offsetX = mx - s.x;
+      offsetY = my - s.y;
+      return;
+    }
+  }
+  if (document.getElementById('dateEnabled').checked && hitTest(mx, my, dateX, dateY, getTextBounds('date'))) dragging = 'date';
+  else if (document.getElementById('hoheiEnabled').checked && hitTest(mx, my, hoheiX, hoheiY, getTextBounds('hohei'))) dragging = 'hohei';
+  else if (document.getElementById('jinjaEnabled').checked && hitTest(mx, my, jinjaX, jinjaY, getTextBounds('jinja'))) dragging = 'jinja';
+  else if (selectedTemplate) {
+    dragging = 'background';
+    offsetX = mx - (256 + backgroundX);
+    offsetY = my - (256 + backgroundY);
+  }
+  if (dragging && dragging !== 'stamp') {
+    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : dragging === 'jinja' ? jinjaX : 256 + backgroundX);
+    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : dragging === 'jinja' ? jinjaY : 256 + backgroundY);
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const nx = mx - offsetX;
+  const ny = my - offsetY;
+  if (dragging === 'date') { dateX = nx; dateY = ny; }
+  else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
+  else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
+  else if (dragging === 'stamp' && selectedStampIndex !== null) { stamps[selectedStampIndex].x = nx; stamps[selectedStampIndex].y = ny; }
+  else if (dragging === 'background') { backgroundX = nx - 256; backgroundY = ny - 256; }
+  updateSlidersFromPositions();
+  markUnsaved();
+  drawAll();
+});
+
+canvas.addEventListener('mouseup', () => { dragging = null; pushHistory(); });
+canvas.addEventListener('mouseleave', () => { dragging = null; });
+
+function hitTest(mx, my, x, y, bounds) {
+  return mx >= x - bounds.width / 2 && mx <= x + bounds.width / 2 && my >= y && my <= y + bounds.height;
+}
+
+function getTextBounds(type) {
+  let text, size, font = dateFont;
+  if (type === 'date') { text = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth); size = +document.getElementById('dateSize').value; font = dateFont; }
+  else if (type === 'hohei') { text = '奉拝'; size = +document.getElementById('hoheiSize').value; font = hoheiFont; }
+  else if (type === 'jinja') { text = document.getElementById('jinjaText').value || ' '; size = +document.getElementById('jinjaSize').value; font = jinjaFont; }
+  ctx.font = `bold ${size}px "${font}", 'Yuji Syuku', sans-serif`;
+  const width = Math.max(...[...text].map(ch => ctx.measureText(ch).width));
+  const height = text.length * size * 1.15;
+  return {width, height};
+}
+
+function drawAllToCanvas(tempCtx) {
+  tempCtx.clearRect(0, 0, 512, 512);
+  if (selectedTemplate) {
+    const img = new Image();
+    img.src = selectedTemplate.dataURL;
+    if (img.complete && img.naturalHeight !== 0) {
+      tempCtx.save();
+      tempCtx.translate(256 + backgroundX, 256 + backgroundY);
+      tempCtx.scale(backgroundScale, backgroundScale);
+      tempCtx.globalAlpha = backgroundOpacity;
+      tempCtx.drawImage(img, -256, -256, 512, 512);
+      tempCtx.restore();
+      tempCtx.globalAlpha = 1;
+    }
+  }
+  if (document.getElementById('stampEnabled').checked) {
+    stamps.forEach(stamp => {
+      tempCtx.save();
+      tempCtx.translate(stamp.x, stamp.y);
+      tempCtx.rotate(stamp.rotate * Math.PI / 180);
+      tempCtx.globalAlpha = stampOpacity;
+      tempCtx.globalCompositeOperation = 'multiply';
+      tempCtx.drawImage(stamp.img, -stamp.size / 2, -stamp.size / 2, stamp.size, stamp.size);
+      tempCtx.restore();
+      tempCtx.globalAlpha = 1;
+    });
+  }
+  if (document.getElementById('dateEnabled').checked) {
+    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
+    drawVertical(tempCtx, dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
+      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
+      +document.getElementById('dateCorrection').value, '#000', dateFont, dateRotate, dateShadow, dateShadowBlur);
+  }
+  if (document.getElementById('hoheiEnabled').checked) {
+    drawVertical(tempCtx, '奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
+      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont, hoheiRotate, hoheiShadow, hoheiShadowBlur);
+  }
+  if (document.getElementById('jinjaEnabled').checked) {
+    const color = document.getElementById('jinjaColor').value;
+    drawVertical(tempCtx, document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
+      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
+      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont, jinjaRotate, jinjaShadow, jinjaShadowBlur);
+  }
+}
+
+function drawVertical(tctx, text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont', rotate = 0, shadow = false, shadowBlur = 5) {
+  tctx.save();
+  tctx.translate(x, y);
+  tctx.rotate(rotate * Math.PI / 180);
+  tctx.textAlign = "center";
+  tctx.textBaseline = "top";
+  tctx.fillStyle = color;
+  tctx.globalAlpha = opacity / 100;
+  tctx.strokeStyle = '#000';
+  tctx.lineWidth = strokeWidth;
+  if (shadow) {
+    tctx.shadowColor = 'rgba(0,0,0,0.5)';
+    tctx.shadowBlur = shadowBlur;
+    tctx.shadowOffsetX = 2;
+    tctx.shadowOffsetY = 2;
+  }
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const curSize = size + correction;
+    tctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
+    for (let r = 0; r < repeat; r++) tctx.fillText(ch, 0, i * size * 1.15);
+    if (stroke) for (let r = 0; r < repeat; r++) tctx.strokeText(ch, 0, i * size * 1.15);
+  }
+  tctx.restore();
+  tctx.globalAlpha = 1;
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 512;
+  tempCanvas.height = 512;
+  const tempCtx = tempCanvas.getContext('2d');
+  drawAllToCanvas(tempCtx);
+  const a = document.createElement('a');
+  a.href = tempCanvas.toDataURL('image/png');
+  a.download = `${filePrefix || 'Nameless Shrine'}_${document.getElementById('yearSelect').value}_${currentMonth.toString().padStart(2,'0')}.png`;
+  a.click();
+});
+
+document.getElementById('downloadAllBtn').addEventListener('click', async () => {
+  const prefix = filePrefix || 'Nameless Shrine';
+  const zip = new JSZip();
+  const year = +document.getElementById('yearSelect').value;
+  const btn = document.getElementById('downloadAllBtn');
+  btn.disabled = true; btn.textContent = "生成中...";
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 512;
+  tempCanvas.height = 512;
+  const tempCtx = tempCanvas.getContext('2d');
+  for (let m = 1; m <= 12; m++) {
+    currentMonth = m;
+    drawAllToCanvas(tempCtx);
+    await new Promise(r => setTimeout(r, 200));
+    const dataURL = tempCanvas.toDataURL('image/png');
+    zip.file(`${prefix}_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
+    btn.textContent = `生成中... (${m}/12)`;
+  }
+  saveAs(await zip.generateAsync({type:"blob"}), `${prefix}_${year}_All.zip`);
+  btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
+});
+
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  const name = prompt('保存ファイル名を入力 (.json)', currentPresetFileName || 'goshuin_settings.json');
+  if (name) {
+    updatePositionsFromSliders();
+    const settings = getCurrentSettings();
+    const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
+    saveAs(blob, name);
+    isUnsaved = false;
+    unsavedIndicator.textContent = '';
+    addToPresetList(name, JSON.stringify(settings, null, 2), new Date().toLocaleString());
+    currentPresetFileName = name;
+    currentPresetName.textContent = name;
+  }
+});
+
+document.getElementById('folderUpload').addEventListener('change', e => {
+  presetList.innerHTML = '';
+  Array.from(e.target.files).filter(f => f.name.endsWith('.json')).forEach(file => {
+    loadPresetFromFile(file);
+  });
+});
 
 function loadPresetFromFile(file) {
   const reader = new FileReader();
@@ -638,125 +1051,6 @@ function addToPresetList(name, content, dateStr) {
   if (name === currentPresetFileName) item.classList.add('selected');
 }
 
-function drawAllToCanvas(tempCtx) {
-  tempCtx.clearRect(0, 0, 512, 512);
-  if (selectedTemplate) {
-    const img = new Image();
-    img.src = selectedTemplate.dataURL;
-    if (img.complete && img.naturalHeight !== 0) {
-      tempCtx.save();
-      tempCtx.translate(backgroundX, backgroundY);
-      tempCtx.scale(backgroundScale, backgroundScale);
-      tempCtx.globalAlpha = backgroundOpacity;
-      tempCtx.drawImage(img, 0, 0, 512 / backgroundScale, 512 / backgroundScale);
-      tempCtx.restore();
-      tempCtx.globalAlpha = 1;
-    }
-  }
-  tempCtx.globalCompositeOperation = 'source-over';
-  if (document.getElementById('stampEnabled').checked) {
-    stamps.forEach(stamp => {
-      tempCtx.save();
-      tempCtx.translate(stamp.x, stamp.y);
-      tempCtx.rotate(stamp.rotate * Math.PI / 180);
-      tempCtx.globalAlpha = stampOpacity;
-      tempCtx.globalCompositeOperation = 'multiply';
-      tempCtx.drawImage(stamp.img, -stamp.size / 2, -stamp.size / 2, stamp.size, stamp.size);
-      tempCtx.restore();
-      tempCtx.globalAlpha = 1;
-    });
-  }
-  if (document.getElementById('dateEnabled').checked) {
-    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
-    drawVerticalToCtx(tempCtx, dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
-      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
-      +document.getElementById('dateCorrection').value, '#000', dateFont, dateRotate, dateShadow, dateShadowBlur);
-  }
-  if (document.getElementById('hoheiEnabled').checked) {
-    drawVerticalToCtx(tempCtx, '奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
-      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont, hoheiRotate, hoheiShadow, hoheiShadowBlur);
-  }
-  if (document.getElementById('jinjaEnabled').checked) {
-    const color = document.getElementById('jinjaColor').value;
-    drawVerticalToCtx(tempCtx, document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
-      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
-      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont, jinjaRotate, jinjaShadow, jinjaShadowBlur);
-  }
-}
-
-function drawVerticalToCtx(tctx, text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont', rotate = 0, shadow = false, shadowBlur = 5) {
-  tctx.save();
-  tctx.translate(x, y);
-  tctx.rotate(rotate * Math.PI / 180);
-  tctx.textAlign = "center";
-  tctx.textBaseline = "top";
-  tctx.fillStyle = color;
-  tctx.globalAlpha = opacity / 100;
-  tctx.strokeStyle = '#000';
-  tctx.lineWidth = strokeWidth;
-  if (shadow) {
-    tctx.shadowColor = 'rgba(0,0,0,0.5)';
-    tctx.shadowBlur = shadowBlur;
-    tctx.shadowOffsetX = 2;
-    tctx.shadowOffsetY = 2;
-  }
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const curSize = size + correction;
-    tctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
-    for (let r = 0; r < repeat; r++) tctx.fillText(ch, 0, i * size * 1.15);
-    if (stroke) for (let r = 0; r < repeat; r++) tctx.strokeText(ch, 0, i * size * 1.15);
-  }
-  tctx.restore();
-  tctx.globalAlpha = 1;
-}
-
-window.onload = () => {
-  applySettings(defaultSettings);
-  const yearSelect = document.getElementById('yearSelect');
-  const currentYear = new Date().getFullYear();
-  const maxYear = 2075;
-  for (let y = currentYear; y <= maxYear; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y + '年';
-    if (y === currentYear) opt.selected = true;
-    yearSelect.appendChild(opt);
-  }
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
-      drawAll();
-    });
-  });
-  drawAll();
-};
-
-document.getElementById('folderUpload').addEventListener('change', e => {
-  presetList.innerHTML = '';
-  Array.from(e.target.files).filter(f => f.name.endsWith('.json')).forEach(file => {
-    loadPresetFromFile(file);
-  });
-});
-
-document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-  const name = prompt('保存ファイル名を入力 (.json)', currentPresetFileName || 'goshuin_settings.json');
-  if (name) {
-    updatePositionsFromSliders();
-    const settings = getCurrentSettings();
-    const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
-    saveAs(blob, name);
-    isUnsaved = false;
-    unsavedIndicator.textContent = '';
-    addToPresetList(name, JSON.stringify(settings, null, 2), new Date().toLocaleString());
-    currentPresetFileName = name;
-    currentPresetName.textContent = name;
-  }
-});
-
 document.getElementById('previewBtn').addEventListener('click', () => {
   previewModal.style.display = 'flex';
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
@@ -782,17 +1076,76 @@ function pushHistory() {
   historyIndex = history.length - 1;
 }
 
-// すべての変更イベントで履歴と未保存マーク
 document.querySelectorAll('input, select').forEach(el => {
-  el.addEventListener('input', () => { markUnsaved(); pushHistory(); });
-  el.addEventListener('change', () => { markUnsaved(); pushHistory(); });
+  el.addEventListener('input', () => { markUnsaved(); pushHistory(); drawAll(); });
+  el.addEventListener('change', () => { markUnsaved(); pushHistory(); drawAll(); });
 });
 
-canvas.addEventListener('mouseup', () => {
-  dragging = null;
-  pushHistory();
+document.getElementById('templateUpload').addEventListener('change', e => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const id = Date.now() + Math.random();
+      templates.push({id, dataURL: ev.target.result});
+      renderTemplateList();
+      if (!selectedTemplate) selectTemplate(templates[templates.length - 1]);
+      markUnsaved();
+      drawAll();
+    };
+    reader.readAsDataURL(file);
+  });
 });
 
+document.getElementById('stampUpload').addEventListener('change', e => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: 256,
+          y: 256,
+          size: 150,
+          rotate: 0
+        });
+        renderStampList();
+        markUnsaved();
+        drawAll();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+document.getElementById('prevMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; markUnsaved(); drawAll(); });
+document.getElementById('nextMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; markUnsaved(); drawAll(); });
+
+window.onload = () => {
+  applySettings(defaultSettings);
+  const yearSelect = document.getElementById('yearSelect');
+  const currentYear = new Date().getFullYear();
+  const maxYear = 2075;
+  for (let y = currentYear; y <= maxYear; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '年';
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      drawAll();
+    });
+  });
+  // 初期描画で文字が表示されるように
+  drawAll();
+};
 
 </script>
 </body>
