@@ -244,7 +244,7 @@ button.big-btn:hover { background: #b00000; }
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
 
-  <div id="version">御朱印工房 - SL Edition　Ver.2026010.0759</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.2026010.0808</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -736,11 +736,8 @@ document.getElementById('saveSettingsBtn').onclick = () => {
   currentPresetFileName = name;
   currentPresetName.textContent = name;
   clearUnsaved();
-  // 保存したものを一覧に追加（既にあれば上書き）
   const existingItem = Array.from(presetList.children).find(el => el.dataset.name === name);
-  if (existingItem) {
-    existingItem.remove();
-  }
+  if (existingItem) existingItem.remove();
   addToPresetList(name, JSON.stringify(settings, null, 2), new Date().toLocaleString());
 };
 
@@ -753,11 +750,8 @@ document.getElementById('singleJsonUpload').onchange = e => {
         const s = JSON.parse(ev.target.result);
         const fileName = file.name;
         applySettings(s, fileName);
-        // 単体読み込み時も一覧に追加（重複チェック）
         const existingItem = Array.from(presetList.children).find(el => el.dataset.name === fileName);
-        if (existingItem) {
-          existingItem.remove();
-        }
+        if (existingItem) existingItem.remove();
         addToPresetList(fileName, ev.target.result, new Date(file.lastModified).toLocaleString());
       } catch (err) {
         alert('読み込み失敗: ' + err.message);
@@ -967,6 +961,28 @@ function applySettings(s, fileName = null) {
   const item = Array.from(presetList.children).find(el => el.dataset.name === fileName);
   if (item) item.classList.add('selected');
 }
+
+document.getElementById('downloadAllBtn').onclick = async () => {
+  const zip = new JSZip();
+  const year = +document.getElementById('yearSelect').value;
+  const originalMonth = currentMonth;
+
+  for (let month = 1; month <= 12; month++) {
+    currentMonth = month;
+    drawAll();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const dataURL = canvas.toDataURL('image/png');
+    const fileName = `${filePrefix || 'Nameless Shrine'}_${year}_${String(month).padStart(2, '0')}.png`;
+    zip.file(fileName, dataURL.split(',')[1], {base64: true});
+  }
+
+  currentMonth = originalMonth;
+  drawAll();
+
+  zip.generateAsync({type: "blob"}).then(blob => {
+    saveAs(blob, `${filePrefix || 'Nameless Shrine'}_${year}_12months.zip`);
+  });
+};
 
 window.onload = () => {
   const yearSelect = document.getElementById('yearSelect');
