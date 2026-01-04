@@ -185,7 +185,7 @@ button.big-btn:hover { background: #b00000; }
     <input type="file" id="loadSettingsUpload" accept=".json" style="display:none;">
   </div>
   <canvas id="goshuinCanvas" width="512" height="512"></canvas>
-  <div id="version">御朱印工房 - SL Edition　Ver.R08004.2139</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.R071229.2005</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -207,7 +207,6 @@ let filePrefix = 'Nameless Shrine';
 let dragging = null;
 let offsetX = 0, offsetY = 0;
 
-// 初期設定
 const defaultSettings = {
   "templates": [],
   "selectedTemplateId": null,
@@ -251,9 +250,7 @@ const defaultSettings = {
   "filePrefix": "Nameless Shrine"
 };
 
-// 初期値適用関数（完全復元対応）
 function applySettings(s) {
-  // テンプレート
   templates = s.templates || [];
   selectedTemplate = null;
   if (s.selectedTemplateId !== null && s.selectedTemplateId !== undefined) {
@@ -261,9 +258,9 @@ function applySettings(s) {
   }
   renderTemplateList();
 
-  // 朱印
   stamps = [];
   selectedStampIndex = null;
+
   const loadPromises = (s.stamps || []).map(stampData => {
     return new Promise(resolve => {
       const img = new Image();
@@ -282,7 +279,6 @@ function applySettings(s) {
     });
   });
 
-  // その他設定反映
   document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
   dateFont = s.date.font || 'KouzanBrushFont';
   document.getElementById('dateFont').value = dateFont;
@@ -326,18 +322,16 @@ function applySettings(s) {
   filePrefix = s.filePrefix || 'Nameless Shrine';
   document.getElementById('filePrefix').value = s.filePrefix || '';
 
-  // 朱印読み込み完了後に描画
   Promise.all(loadPromises).then(() => {
     renderStampList();
-    if (stamps.length > 0) selectedStampIndex = 0;
     updateStampControls();
     drawAll();
   });
 }
 
-// ページロード時
 window.onload = () => {
   applySettings(defaultSettings);
+
   const yearSelect = document.getElementById('yearSelect');
   const currentYear = new Date().getFullYear();
   const maxYear = 2075;
@@ -348,14 +342,343 @@ window.onload = () => {
     if (y === currentYear) opt.selected = true;
     yearSelect.appendChild(opt);
   }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      drawAll();
+    });
+  });
+
   drawAll();
 };
 
-// （以下、HTML構造・その他の関数は変更なし…）
+document.getElementById('templateUpload').addEventListener('change', e => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const id = Date.now() + Math.random();
+      templates.push({id, dataURL: ev.target.result});
+      renderTemplateList();
+      if (!selectedTemplate) selectTemplate(templates[templates.length - 1]);
+    };
+    reader.readAsDataURL(file);
+  });
+});
 
-// 【重要修正】設定保存（すべての最新値を正確に取得）
+function renderTemplateList() {
+  const list = document.getElementById('template-list');
+  list.innerHTML = '';
+  templates.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'template-thumb' + (selectedTemplate && selectedTemplate.id === t.id ? ' selected' : '');
+    div.innerHTML = `<img src="${t.dataURL}"><button class="delete-btn">×</button>`;
+    div.addEventListener('click', e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        templates = templates.filter(tt => tt.id !== t.id);
+        renderTemplateList();
+        if (selectedTemplate && selectedTemplate.id === t.id) selectedTemplate = null;
+        drawAll();
+      } else {
+        selectTemplate(t);
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function selectTemplate(t) {
+  selectedTemplate = t;
+  renderTemplateList();
+  drawAll();
+}
+
+document.getElementById('stampUpload').addEventListener('change', e => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: 256,
+          y: 256,
+          size: 150,
+          rotate: 0
+        });
+        renderStampList();
+        drawAll();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+function renderStampList() {
+  const list = document.getElementById('stamp-list');
+  list.innerHTML = '';
+  stamps.forEach((stamp, index) => {
+    const div = document.createElement('div');
+    div.className = 'stamp-thumb' + (selectedStampIndex === index ? ' selected' : '');
+    div.innerHTML = `<img src="${stamp.img.src}"><button class="delete-btn">×</button>`;
+    div.addEventListener('click', e => {
+      if (e.target.className === 'delete-btn') {
+        e.stopPropagation();
+        stamps.splice(index, 1);
+        if (selectedStampIndex === index) selectedStampIndex = null;
+        else if (selectedStampIndex > index) selectedStampIndex--;
+        renderStampList();
+        drawAll();
+      } else {
+        selectedStampIndex = index;
+        renderStampList();
+        updateStampControls();
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function updateStampControls() {
+  if (selectedStampIndex === null) return;
+  const s = stamps[selectedStampIndex];
+  document.getElementById('stampSize').value = s.size;
+  document.getElementById('stampSizeVal').textContent = s.size;
+  document.getElementById('stampRotate').value = s.rotate;
+  document.getElementById('stampRotateVal').textContent = s.rotate + '°';
+}
+
+document.getElementById('stampSize').addEventListener('input', () => {
+  if (selectedStampIndex !== null) {
+    stamps[selectedStampIndex].size = +document.getElementById('stampSize').value;
+    document.getElementById('stampSizeVal').textContent = stamps[selectedStampIndex].size;
+    drawAll();
+  }
+});
+
+document.getElementById('stampRotate').addEventListener('input', () => {
+  if (selectedStampIndex !== null) {
+    stamps[selectedStampIndex].rotate = +document.getElementById('stampRotate').value;
+    document.getElementById('stampRotateVal').textContent = stamps[selectedStampIndex].rotate + '°';
+    drawAll();
+  }
+});
+
+document.getElementById('filePrefix').addEventListener('input', function() {
+  this.value = this.value.replace(/[^\x20-\x7E]/g, '');
+  filePrefix = this.value.trim() || 'Nameless Shrine';
+});
+
+document.querySelectorAll('input[type="range"]').forEach(slider => {
+  const valSpan = document.getElementById(slider.id + 'Val');
+  slider.addEventListener('input', () => {
+    if (valSpan) valSpan.textContent = slider.value + (slider.id.includes('Opacity') ? '%' : slider.id.includes('Rotate') ? '°' : '');
+    updatePositionsFromSliders();
+    drawAll();
+  });
+});
+
+document.querySelectorAll('input[type="checkbox"], input[type="text"], select').forEach(el => {
+  if (el.id !== 'filePrefix' && !el.id.includes('FontCustom')) el.addEventListener('change', drawAll);
+});
+
+function setCustomFont(type) {
+  const input = document.getElementById(type + 'FontCustom');
+  if (input.value.trim()) {
+    if (type === 'date') dateFont = input.value.trim();
+    if (type === 'hohei') hoheiFont = input.value.trim();
+    if (type === 'jinja') jinjaFont = input.value.trim();
+    drawAll();
+  }
+}
+
+document.getElementById('prevMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 1 ? 12 : currentMonth - 1; drawAll(); });
+document.getElementById('nextMonthBtn').addEventListener('click', () => { currentMonth = currentMonth === 12 ? 1 : currentMonth + 1; drawAll(); });
+
+const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+const juu = ["十", "二十", "三十", "四十", "五十", "六十", "七十", "八十", "九十"];
+function toKanji(n) {
+  if (n === 0) return "〇";
+  if (n <= 9) return kan[n];
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  return (tens > 0 ? juu[tens - 1] : "") + (ones > 0 ? kan[ones] : "");
+}
+function getJapaneseDate(year, month) {
+  const reiwaYear = year - 2018;
+  const yearStr = reiwaYear === 1 ? "令和元年" : "令和" + toKanji(reiwaYear) + "年";
+  return yearStr + toKanji(month) + "月吉日";
+}
+
+function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont') {
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = color;
+  ctx.globalAlpha = opacity / 100;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = strokeWidth;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const curSize = size + correction;
+    ctx.font = `bold ${curSize}px "${fontFamily}", 'Yuji Syuku', sans-serif`;
+    for (let r = 0; r < repeat; r++) ctx.fillText(ch, x, y + i * size * 1.15);
+    if (stroke) for (let r = 0; r < repeat; r++) ctx.strokeText(ch, x, y + i * size * 1.15);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawStamp(stamp) {
+  ctx.save();
+  ctx.translate(stamp.x, stamp.y);
+  ctx.rotate(stamp.rotate * Math.PI / 180);
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.drawImage(stamp.img, -stamp.size / 2, -stamp.size / 2, stamp.size, stamp.size);
+  ctx.restore();
+}
+
+function drawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (selectedTemplate) {
+    const img = new Image();
+    img.src = selectedTemplate.dataURL;
+    img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); };
+    if (img.complete && img.naturalHeight !== 0) { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); drawRest(); }
+    return;
+  }
+  drawRest();
+}
+
+function drawRest() {
+  ctx.globalCompositeOperation = 'source-over';
+  if (document.getElementById('stampEnabled').checked) {
+    stamps.forEach(stamp => drawStamp(stamp));
+  }
+  if (document.getElementById('dateEnabled').checked) {
+    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
+    drawVertical(dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value,
+      +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value,
+      +document.getElementById('dateCorrection').value, '#000', dateFont);
+  }
+  if (document.getElementById('hoheiEnabled').checked) {
+    drawVertical('奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value,
+      +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont);
+  }
+  if (document.getElementById('jinjaEnabled').checked) {
+    const color = document.getElementById('jinjaColor').value;
+    drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value,
+      +document.getElementById('jinjaOpacity').value, +document.getElementById('jinjaRepeat').value,
+      document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont);
+  }
+}
+
+function updatePositionsFromSliders() {
+  dateX = +document.getElementById('dateX').value;
+  dateY = +document.getElementById('dateY').value;
+  hoheiX = +document.getElementById('hoheiX').value;
+  hoheiY = +document.getElementById('hoheiY').value;
+  jinjaX = +document.getElementById('jinjaX').value;
+  jinjaY = +document.getElementById('jinjaY').value;
+}
+
+function updateSlidersFromPositions() {
+  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
+  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
+  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
+  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
+  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
+  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
+}
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (let i = stamps.length - 1; i >= 0; i--) {
+    const s = stamps[i];
+    if (document.getElementById('stampEnabled').checked && Math.hypot(mx - s.x, my - s.y) < s.size / 2) {
+      selectedStampIndex = i;
+      renderStampList();
+      updateStampControls();
+      dragging = 'stamp';
+      offsetX = mx - s.x;
+      offsetY = my - s.y;
+      return;
+    }
+  }
+  if (document.getElementById('dateEnabled').checked && hitTest(mx, my, dateX, dateY, getTextBounds('date'))) dragging = 'date';
+  else if (document.getElementById('hoheiEnabled').checked && hitTest(mx, my, hoheiX, hoheiY, getTextBounds('hohei'))) dragging = 'hohei';
+  else if (document.getElementById('jinjaEnabled').checked && hitTest(mx, my, jinjaX, jinjaY, getTextBounds('jinja'))) dragging = 'jinja';
+  if (dragging && dragging !== 'stamp') {
+    offsetX = mx - (dragging === 'date' ? dateX : dragging === 'hohei' ? hoheiX : jinjaX);
+    offsetY = my - (dragging === 'date' ? dateY : dragging === 'hohei' ? hoheiY : jinjaY);
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const nx = mx - offsetX;
+  const ny = my - offsetY;
+  if (dragging === 'date') { dateX = nx; dateY = ny; }
+  else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
+  else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
+  else if (dragging === 'stamp' && selectedStampIndex !== null) { stamps[selectedStampIndex].x = nx; stamps[selectedStampIndex].y = ny; }
+  updateSlidersFromPositions();
+  drawAll();
+});
+
+canvas.addEventListener('mouseup', () => { dragging = null; });
+canvas.addEventListener('mouseleave', () => { dragging = null; });
+
+function hitTest(mx, my, x, y, bounds) {
+  return mx >= x - bounds.width / 2 && mx <= x + bounds.width / 2 && my >= y && my <= y + bounds.height;
+}
+
+function getTextBounds(type) {
+  let text, size, font = dateFont;
+  if (type === 'date') { text = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth); size = +document.getElementById('dateSize').value; font = dateFont; }
+  else if (type === 'hohei') { text = '奉拝'; size = +document.getElementById('hoheiSize').value; font = hoheiFont; }
+  else if (type === 'jinja') { text = document.getElementById('jinjaText').value || ' '; size = +document.getElementById('jinjaSize').value; font = jinjaFont; }
+  ctx.font = `bold ${size}px "${font}", 'Yuji Syuku', sans-serif`;
+  const width = Math.max(...[...text].map(ch => ctx.measureText(ch).width));
+  const height = text.length * size * 1.15;
+  return {width, height};
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const prefix = filePrefix || 'Nameless Shrine';
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `${prefix}_${document.getElementById('yearSelect').value}_${currentMonth.toString().padStart(2,'0')}.png`;
+  a.click();
+});
+
+document.getElementById('downloadAllBtn').addEventListener('click', async () => {
+  const prefix = filePrefix || 'Nameless Shrine';
+  const zip = new JSZip();
+  const year = +document.getElementById('yearSelect').value;
+  const btn = document.getElementById('downloadAllBtn');
+  btn.disabled = true; btn.textContent = "生成中...";
+  for (let m = 1; m <= 12; m++) {
+    currentMonth = m;
+    drawAll();
+    await new Promise(r => setTimeout(r, 200));
+    const dataURL = canvas.toDataURL('image/png');
+    zip.file(`${prefix}_${year}_${m.toString().padStart(2,'0')}.png`, dataURL.split(',')[1], {base64: true});
+    btn.textContent = `生成中... (${m}/12)`;
+  }
+  saveAs(await zip.generateAsync({type:"blob"}), `${prefix}_${year}_All.zip`);
+  btn.disabled = false; btn.textContent = "12ヶ月一括 ZIP保存";
+});
+
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-  // 最新の位置をスライダーから確実に取得（ドラッグ後も同期済み）
   updatePositionsFromSliders();
 
   const settings = {
@@ -410,25 +733,20 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   saveAs(blob, 'goshuin_settings.json');
 });
 
-// ドラッグ中もスライダー同期（変更前から存在したが明示的に保証）
-canvas.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  const nx = mx - offsetX;
-  const ny = my - offsetY;
-  if (dragging === 'date') { dateX = nx; dateY = ny; }
-  else if (dragging === 'hohei') { hoheiX = nx; hoheiY = ny; }
-  else if (dragging === 'jinja') { jinjaX = nx; jinjaY = ny; }
-  else if (dragging === 'stamp' && selectedStampIndex !== null) { stamps[selectedStampIndex].x = nx; stamps[selectedStampIndex].y = ny; }
-  updateSlidersFromPositions();  // ← これでスライダー常に同期
-  drawAll();
+document.getElementById('loadSettingsUpload').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const s = JSON.parse(ev.target.result);
+      applySettings(s);
+    } catch (err) {
+      alert('JSONファイルの読み込みに失敗しました: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
 });
-
-// その他の関数（renderTemplateList, drawAll など）は変更なし
-// （省略されている部分はすべて元のコードと同一）
-
 </script>
 </body>
 </html>
