@@ -235,7 +235,7 @@ button.big-btn:hover { background: #b00000; }
       <input type="file" id="folderUpload" webkitdirectory directory multiple>
     </div>
     <div id="currentPreset">現在読み込み中: <span id="currentPresetName">新規設定</span><span id="unsavedIndicator"></span></div>
-    <h3 style="margin-top:40px;">保存済み設定一覧（クリックで読み込み）</h3>
+    <h3 style="margin-top:40px;">読み込み済み設定一覧（クリックで読み込み）</h3>
     <div id="presetList"></div>
   </div>
 
@@ -244,7 +244,7 @@ button.big-btn:hover { background: #b00000; }
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
 
-  <div id="version">御朱印工房 - SL Edition　Ver.2026010.0740</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.2026010.0715</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -746,6 +746,7 @@ document.getElementById('singleJsonUpload').onchange = e => {
       try {
         const s = JSON.parse(ev.target.result);
         applySettings(s, file.name);
+        // 単体読み込みでは一覧をクリアしない（フォルダ読み込み時のみクリア）
       } catch (err) {
         alert('読み込み失敗: ' + err.message);
       }
@@ -755,7 +756,7 @@ document.getElementById('singleJsonUpload').onchange = e => {
 };
 
 document.getElementById('folderUpload').onchange = e => {
-  presetList.innerHTML = '';
+  presetList.innerHTML = ''; // フォルダ読み込み時は一覧を新規作成
   const files = Array.from(e.target.files);
   if (files.length === 0) return;
   files.filter(f => f.name.endsWith('.json')).forEach(file => {
