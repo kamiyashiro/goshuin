@@ -5,7 +5,8 @@
 <title>御朱印工房 - SL Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Klee+One&family=Kosugi+Maru&family=Potta+One&family=Yuji+Boku&family=Yuji+Syuku&family=Zen+Kurenaido&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Klee+One&family=Kosugi+Maru&family=Potta+One&family=Yuji+Boku&family=Yuji+Syuku&family=Zen+Kurenaido&family=Zen+Old+Mincho&family=Yomogi&family=RocknRoll+One&display=swap" rel="stylesheet">
+<link rel="preload" href="KouzanBrushFont.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face {
   font-family: 'KouzanBrushFont';
@@ -408,7 +409,7 @@ function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, co
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     const curSize = size + correction;
-    ctx.font = `bold ${curSize}px "${fontFamily}", sans-serif`;
+    ctx.font = `bold ${curSize}px "${fontFamily}", 'Yomogi', 'Kosugi Maru', 'RocknRoll One', sans-serif`;
     for (let r = 0; r < repeat; r++) ctx.fillText(ch, 0, i * size * 1.15);
     if (stroke) for (let r = 0; r < repeat; r++) ctx.strokeText(ch, 0, i * size * 1.15);
   }
@@ -416,161 +417,40 @@ function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, co
   ctx.globalAlpha = 1;
 }
 
-function getCurrentSettings() {
-  return {
-    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
-    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
-    date: {
-      enabled: document.getElementById('dateEnabled').checked,
-      font: dateFont,
-      x: dateX,
-      y: dateY,
-      size: +document.getElementById('dateSize').value,
-      correction: +document.getElementById('dateCorrection').value,
-      opacity: +document.getElementById('dateOpacity').value,
-      repeat: +document.getElementById('dateRepeat').value,
-      stroke: document.getElementById('dateStroke').checked,
-      strokeWidth: +document.getElementById('dateStrokeWidth').value,
-      rotate: dateRotate
-    },
-    hohei: {
-      enabled: document.getElementById('hoheiEnabled').checked,
-      font: hoheiFont,
-      x: hoheiX,
-      y: hoheiY,
-      size: +document.getElementById('hoheiSize').value,
-      opacity: +document.getElementById('hoheiOpacity').value,
-      repeat: +document.getElementById('hoheiRepeat').value,
-      stroke: document.getElementById('hoheiStroke').checked,
-      rotate: hoheiRotate
-    },
-    jinja: {
-      enabled: document.getElementById('jinjaEnabled').checked,
-      text: document.getElementById('jinjaText').value,
-      color: document.getElementById('jinjaColor').value,
-      font: jinjaFont,
-      x: jinjaX,
-      y: jinjaY,
-      size: +document.getElementById('jinjaSize').value,
-      opacity: +document.getElementById('jinjaOpacity').value,
-      repeat: +document.getElementById('jinjaRepeat').value,
-      stroke: document.getElementById('jinjaStroke').checked,
-      rotate: jinjaRotate
-    },
-    stamps: stamps.map(s => ({dataURL: s.img.src, x: s.x, y: s.y, size: s.size, rotate: s.rotate})),
-    currentMonth: currentMonth,
-    year: +document.getElementById('yearSelect').value,
-    filePrefix: document.getElementById('filePrefix').value.trim() || 'Nameless Shrine',
-    backgroundOpacity: +document.getElementById('backgroundOpacity').value,
-    stampOpacity: +document.getElementById('stampOpacity').value,
-    backgroundScale: +document.getElementById('backgroundScale').value,
-    backgroundX: backgroundX,
-    backgroundY: backgroundY
-  };
+function resetBackgroundScale() {
+  document.getElementById('backgroundScale').value = 100;
+  backgroundScale = 1;
+  updateAllSliderDisplays();
+  markUnsaved();
+  drawAll();
 }
 
-function applySettings(s, fileName = null) {
-  templates = s.templates || [];
-  selectedTemplate = templates.find(t => t.id === s.selectedTemplateId) || null;
-  renderTemplateList();
+function resetBackgroundPosition() {
+  document.getElementById('backgroundX').value = 0;
+  document.getElementById('backgroundY').value = 0;
+  backgroundX = 0;
+  backgroundY = 0;
+  updateAllSliderDisplays();
+  markUnsaved();
+  drawAll();
+}
 
-  stamps = [];
-  selectedStampIndex = null;
-  const loadPromises = (s.stamps || []).map(stampData => {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        stamps.push({
-          img: img,
-          x: stampData.x ?? 256,
-          y: stampData.y ?? 256,
-          size: stampData.size ?? 150,
-          rotate: stampData.rotate ?? 0
-        });
-        resolve();
-      };
-      img.src = stampData.dataURL;
-    });
-  });
-
-  document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
-  dateFont = s.date.font ?? 'KouzanBrushFont';
-  document.getElementById('dateFont').value = dateFont;
-  dateX = s.date.x ?? 72;
-  dateY = s.date.y ?? 36;
-  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
-  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
-  document.getElementById('dateSize').value = s.date.size ?? 36; document.getElementById('dateSizeVal').textContent = s.date.size ?? 36;
-  document.getElementById('dateCorrection').value = s.date.correction ?? 0; document.getElementById('dateCorrectionVal').textContent = s.date.correction ?? 0;
-  document.getElementById('dateOpacity').value = s.date.opacity ?? 100; document.getElementById('dateOpacityVal').textContent = (s.date.opacity ?? 100) + '%';
-  document.getElementById('dateRepeat').value = s.date.repeat ?? 4; document.getElementById('dateRepeatVal').textContent = s.date.repeat ?? 4;
-  document.getElementById('dateStroke').checked = s.date.stroke ?? false;
-  document.getElementById('dateStrokeWidth').value = s.date.strokeWidth ?? 2; document.getElementById('dateStrokeWidthVal').textContent = s.date.strokeWidth ?? 2;
-  dateRotate = s.date.rotate ?? 0;
-  document.getElementById('dateRotate').value = dateRotate; document.getElementById('dateRotateVal').textContent = dateRotate + '°';
-
-  document.getElementById('hoheiEnabled').checked = s.hohei.enabled ?? true;
-  hoheiFont = s.hohei.font ?? 'KouzanBrushFont';
-  document.getElementById('hoheiFont').value = hoheiFont;
-  hoheiX = s.hohei.x ?? 457;
-  hoheiY = s.hohei.y ?? 46;
-  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
-  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
-  document.getElementById('hoheiSize').value = s.hohei.size ?? 75; document.getElementById('hoheiSizeVal').textContent = s.hohei.size ?? 75;
-  document.getElementById('hoheiOpacity').value = s.hohei.opacity ?? 100; document.getElementById('hoheiOpacityVal').textContent = (s.hohei.opacity ?? 100) + '%';
-  document.getElementById('hoheiRepeat').value = s.hohei.repeat ?? 4; document.getElementById('hoheiRepeatVal').textContent = s.hohei.repeat ?? 4;
-  document.getElementById('hoheiStroke').checked = s.hohei.stroke ?? false;
-  hoheiRotate = s.hohei.rotate ?? 0;
-  document.getElementById('hoheiRotate').value = hoheiRotate; document.getElementById('hoheiRotateVal').textContent = hoheiRotate + '°';
-
-  document.getElementById('jinjaEnabled').checked = s.jinja.enabled ?? true;
-  document.getElementById('jinjaText').value = s.jinja.text ?? "神社名";
-  document.getElementById('jinjaColor').value = s.jinja.color ?? "#000000";
-  jinjaFont = s.jinja.font ?? 'KouzanBrushFont';
-  document.getElementById('jinjaFont').value = jinjaFont;
-  jinjaX = s.jinja.x ?? 258;
-  jinjaY = s.jinja.y ?? 50;
-  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
-  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
-  document.getElementById('jinjaSize').value = s.jinja.size ?? 80; document.getElementById('jinjaSizeVal').textContent = s.jinja.size ?? 80;
-  document.getElementById('jinjaOpacity').value = s.jinja.opacity ?? 100; document.getElementById('jinjaOpacityVal').textContent = (s.jinja.opacity ?? 100) + '%';
-  document.getElementById('jinjaRepeat').value = s.jinja.repeat ?? 4; document.getElementById('jinjaRepeatVal').textContent = s.jinja.repeat ?? 4;
-  document.getElementById('jinjaStroke').checked = s.jinja.stroke ?? false;
-  jinjaRotate = s.jinja.rotate ?? 0;
-  document.getElementById('jinjaRotate').value = jinjaRotate; document.getElementById('jinjaRotateVal').textContent = jinjaRotate + '°';
-
-  currentMonth = s.currentMonth ?? new Date().getMonth() + 1;
-  document.getElementById('yearSelect').value = s.year ?? new Date().getFullYear();
-  filePrefix = s.filePrefix ?? 'Nameless Shrine';
-  document.getElementById('filePrefix').value = s.filePrefix ?? '';
-  backgroundOpacity = (s.backgroundOpacity ?? 100) / 100;
-  document.getElementById('backgroundOpacity').value = s.backgroundOpacity ?? 100;
-  document.getElementById('backgroundOpacityVal').textContent = (s.backgroundOpacity ?? 100) + '%';
-  stampOpacity = (s.stampOpacity ?? 100) / 100;
-  document.getElementById('stampOpacity').value = s.stampOpacity ?? 100;
-  document.getElementById('stampOpacityVal').textContent = (s.stampOpacity ?? 100) + '%';
-  backgroundScale = (s.backgroundScale ?? 100) / 100;
-  document.getElementById('backgroundScale').value = s.backgroundScale ?? 100;
-  document.getElementById('backgroundScaleVal').textContent = (s.backgroundScale ?? 100) + '%';
-  backgroundX = s.backgroundX ?? 0;
-  document.getElementById('backgroundX').value = backgroundX;
-  document.getElementById('backgroundXVal').textContent = backgroundX;
-  backgroundY = s.backgroundY ?? 0;
-  document.getElementById('backgroundY').value = backgroundY;
-  document.getElementById('backgroundYVal').textContent = backgroundY;
-
-  Promise.all(loadPromises).then(() => {
-    renderStampList();
-    updateStampControls();
+function fitBackground() {
+  if (!selectedTemplate) return;
+  const img = new Image();
+  img.src = selectedTemplate.dataURL;
+  img.onload = () => {
+    const ratio = Math.min(512 / img.width, 512 / img.height);
+    document.getElementById('backgroundScale').value = Math.round(ratio * 100);
+    backgroundScale = ratio;
+    backgroundX = 0;
+    backgroundY = 0;
+    document.getElementById('backgroundX').value = 0;
+    document.getElementById('backgroundY').value = 0;
     updateAllSliderDisplays();
-    waitForKouzanFont(() => {
-      drawAll();
-    });
-  });
-
-  currentPresetFileName = fileName;
-  currentPresetName.textContent = fileName || '新規設定';
-  clearUnsaved();
+    markUnsaved();
+    drawAll();
+  };
 }
 
 function renderTemplateList() {
@@ -913,6 +793,166 @@ function addToPresetList(fileName, content, dateStr) {
     }
   };
   presetList.appendChild(item);
+}
+
+function getCurrentSettings() {
+  return {
+    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
+    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
+    date: {
+      enabled: document.getElementById('dateEnabled').checked,
+      font: dateFont,
+      x: dateX,
+      y: dateY,
+      size: +document.getElementById('dateSize').value,
+      correction: +document.getElementById('dateCorrection').value,
+      opacity: +document.getElementById('dateOpacity').value,
+      repeat: +document.getElementById('dateRepeat').value,
+      stroke: document.getElementById('dateStroke').checked,
+      strokeWidth: +document.getElementById('dateStrokeWidth').value,
+      rotate: dateRotate
+    },
+    hohei: {
+      enabled: document.getElementById('hoheiEnabled').checked,
+      font: hoheiFont,
+      x: hoheiX,
+      y: hoheiY,
+      size: +document.getElementById('hoheiSize').value,
+      opacity: +document.getElementById('hoheiOpacity').value,
+      repeat: +document.getElementById('hoheiRepeat').value,
+      stroke: document.getElementById('hoheiStroke').checked,
+      rotate: hoheiRotate
+    },
+    jinja: {
+      enabled: document.getElementById('jinjaEnabled').checked,
+      text: document.getElementById('jinjaText').value,
+      color: document.getElementById('jinjaColor').value,
+      font: jinjaFont,
+      x: jinjaX,
+      y: jinjaY,
+      size: +document.getElementById('jinjaSize').value,
+      opacity: +document.getElementById('jinjaOpacity').value,
+      repeat: +document.getElementById('jinjaRepeat').value,
+      stroke: document.getElementById('jinjaStroke').checked,
+      rotate: jinjaRotate
+    },
+    stamps: stamps.map(s => ({dataURL: s.img.src, x: s.x, y: s.y, size: s.size, rotate: s.rotate})),
+    currentMonth: currentMonth,
+    year: +document.getElementById('yearSelect').value,
+    filePrefix: document.getElementById('filePrefix').value.trim() || 'Nameless Shrine',
+    backgroundOpacity: +document.getElementById('backgroundOpacity').value,
+    stampOpacity: +document.getElementById('stampOpacity').value,
+    backgroundScale: +document.getElementById('backgroundScale').value,
+    backgroundX: backgroundX,
+    backgroundY: backgroundY
+  };
+}
+
+function applySettings(s, fileName = null) {
+  templates = s.templates || [];
+  selectedTemplate = templates.find(t => t.id === s.selectedTemplateId) || null;
+  renderTemplateList();
+
+  stamps = [];
+  selectedStampIndex = null;
+  const loadPromises = (s.stamps || []).map(stampData => {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: stampData.x ?? 256,
+          y: stampData.y ?? 256,
+          size: stampData.size ?? 150,
+          rotate: stampData.rotate ?? 0
+        });
+        resolve();
+      };
+      img.src = stampData.dataURL;
+    });
+  });
+
+  document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
+  dateFont = s.date.font ?? 'KouzanBrushFont';
+  document.getElementById('dateFont').value = dateFont;
+  dateX = s.date.x ?? 72;
+  dateY = s.date.y ?? 36;
+  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
+  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
+  document.getElementById('dateSize').value = s.date.size ?? 36; document.getElementById('dateSizeVal').textContent = s.date.size ?? 36;
+  document.getElementById('dateCorrection').value = s.date.correction ?? 0; document.getElementById('dateCorrectionVal').textContent = s.date.correction ?? 0;
+  document.getElementById('dateOpacity').value = s.date.opacity ?? 100; document.getElementById('dateOpacityVal').textContent = (s.date.opacity ?? 100) + '%';
+  document.getElementById('dateRepeat').value = s.date.repeat ?? 4; document.getElementById('dateRepeatVal').textContent = s.date.repeat ?? 4;
+  document.getElementById('dateStroke').checked = s.date.stroke ?? false;
+  document.getElementById('dateStrokeWidth').value = s.date.strokeWidth ?? 2; document.getElementById('dateStrokeWidthVal').textContent = s.date.strokeWidth ?? 2;
+  dateRotate = s.date.rotate ?? 0;
+  document.getElementById('dateRotate').value = dateRotate; document.getElementById('dateRotateVal').textContent = dateRotate + '°';
+
+  document.getElementById('hoheiEnabled').checked = s.hohei.enabled ?? true;
+  hoheiFont = s.hohei.font ?? 'KouzanBrushFont';
+  document.getElementById('hoheiFont').value = hoheiFont;
+  hoheiX = s.hohei.x ?? 457;
+  hoheiY = s.hohei.y ?? 46;
+  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
+  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
+  document.getElementById('hoheiSize').value = s.hohei.size ?? 75; document.getElementById('hoheiSizeVal').textContent = s.hohei.size ?? 75;
+  document.getElementById('hoheiOpacity').value = s.hohei.opacity ?? 100; document.getElementById('hoheiOpacityVal').textContent = (s.hohei.opacity ?? 100) + '%';
+  document.getElementById('hoheiRepeat').value = s.hohei.repeat ?? 4; document.getElementById('hoheiRepeatVal').textContent = s.hohei.repeat ?? 4;
+  document.getElementById('hoheiStroke').checked = s.hohei.stroke ?? false;
+  hoheiRotate = s.hohei.rotate ?? 0;
+  document.getElementById('hoheiRotate').value = hoheiRotate; document.getElementById('hoheiRotateVal').textContent = hoheiRotate + '°';
+
+  document.getElementById('jinjaEnabled').checked = s.jinja.enabled ?? true;
+  document.getElementById('jinjaText').value = s.jinja.text ?? "神社名";
+  document.getElementById('jinjaColor').value = s.jinja.color ?? "#000000";
+  jinjaFont = s.jinja.font ?? 'KouzanBrushFont';
+  document.getElementById('jinjaFont').value = jinjaFont;
+  jinjaX = s.jinja.x ?? 258;
+  jinjaY = s.jinja.y ?? 50;
+  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
+  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
+  document.getElementById('jinjaSize').value = s.jinja.size ?? 80; document.getElementById('jinjaSizeVal').textContent = s.jinja.size ?? 80;
+  document.getElementById('jinjaOpacity').value = s.jinja.opacity ?? 100; document.getElementById('jinjaOpacityVal').textContent = (s.jinja.opacity ?? 100) + '%';
+  document.getElementById('jinjaRepeat').value = s.jinja.repeat ?? 4; document.getElementById('jinjaRepeatVal').textContent = s.jinja.repeat ?? 4;
+  document.getElementById('jinjaStroke').checked = s.jinja.stroke ?? false;
+  jinjaRotate = s.jinja.rotate ?? 0;
+  document.getElementById('jinjaRotate').value = jinjaRotate; document.getElementById('jinjaRotateVal').textContent = jinjaRotate + '°';
+
+  currentMonth = s.currentMonth ?? new Date().getMonth() + 1;
+  document.getElementById('yearSelect').value = s.year ?? new Date().getFullYear();
+  filePrefix = s.filePrefix ?? 'Nameless Shrine';
+  document.getElementById('filePrefix').value = s.filePrefix ?? '';
+  backgroundOpacity = (s.backgroundOpacity ?? 100) / 100;
+  document.getElementById('backgroundOpacity').value = s.backgroundOpacity ?? 100;
+  document.getElementById('backgroundOpacityVal').textContent = (s.backgroundOpacity ?? 100) + '%';
+  stampOpacity = (s.stampOpacity ?? 100) / 100;
+  document.getElementById('stampOpacity').value = s.stampOpacity ?? 100;
+  document.getElementById('stampOpacityVal').textContent = (s.stampOpacity ?? 100) + '%';
+  backgroundScale = (s.backgroundScale ?? 100) / 100;
+  document.getElementById('backgroundScale').value = s.backgroundScale ?? 100;
+  document.getElementById('backgroundScaleVal').textContent = (s.backgroundScale ?? 100) + '%';
+  backgroundX = s.backgroundX ?? 0;
+  document.getElementById('backgroundX').value = backgroundX;
+  document.getElementById('backgroundXVal').textContent = backgroundX;
+  backgroundY = s.backgroundY ?? 0;
+  document.getElementById('backgroundY').value = backgroundY;
+  document.getElementById('backgroundYVal').textContent = backgroundY;
+
+  Promise.all(loadPromises).then(() => {
+    renderStampList();
+    updateStampControls();
+    updateAllSliderDisplays();
+    waitForKouzanFont(() => {
+      drawAll();
+    });
+  });
+
+  currentPresetFileName = fileName;
+  currentPresetName.textContent = fileName || '新規設定';
+  clearUnsaved();
+  document.querySelectorAll('.preset-item').forEach(i => i.classList.remove('selected'));
+  const item = Array.from(presetList.children).find(el => el.dataset.name === fileName);
+  if (item) item.classList.add('selected');
 }
 
 window.onload = () => {
