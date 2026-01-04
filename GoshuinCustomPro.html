@@ -185,7 +185,7 @@ button.big-btn:hover { background: #b00000; }
     <input type="file" id="loadSettingsUpload" accept=".json" style="display:none;">
   </div>
   <canvas id="goshuinCanvas" width="512" height="512"></canvas>
-  <div id="version">御朱印工房 - SL Edition　Ver.20260104.2159</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.20260104.2217</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -267,10 +267,10 @@ function applySettings(s) {
       img.onload = () => {
         stamps.push({
           img: img,
-          x: stampData.x || 256,
-          y: stampData.y || 256,
-          size: stampData.size || 150,
-          rotate: stampData.rotate || 0
+          x: stampData.x ?? 256,
+          y: stampData.y ?? 256,
+          size: stampData.size ?? 150,
+          rotate: stampData.rotate ?? 0
         });
         resolve();
       };
@@ -280,9 +280,10 @@ function applySettings(s) {
   });
 
   document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
-  dateFont = s.date.font || 'KouzanBrushFont';
+  dateFont = s.date.font ?? 'KouzanBrushFont';
   document.getElementById('dateFont').value = dateFont;
-  dateX = s.date.x ?? 72; dateY = s.date.y ?? 36;
+  dateX = s.date.x ?? 72;
+  dateY = s.date.y ?? 36;
   document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
   document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
   document.getElementById('dateSize').value = s.date.size ?? 36; document.getElementById('dateSizeVal').textContent = s.date.size ?? 36;
@@ -293,9 +294,10 @@ function applySettings(s) {
   document.getElementById('dateStrokeWidth').value = s.date.strokeWidth ?? 2; document.getElementById('dateStrokeWidthVal').textContent = s.date.strokeWidth ?? 2;
 
   document.getElementById('hoheiEnabled').checked = s.hohei.enabled ?? true;
-  hoheiFont = s.hohei.font || 'KouzanBrushFont';
+  hoheiFont = s.hohei.font ?? 'KouzanBrushFont';
   document.getElementById('hoheiFont').value = hoheiFont;
-  hoheiX = s.hohei.x ?? 457; hoheiY = s.hohei.y ?? 46;
+  hoheiX = s.hohei.x ?? 457;
+  hoheiY = s.hohei.y ?? 46;
   document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
   document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
   document.getElementById('hoheiSize').value = s.hohei.size ?? 75; document.getElementById('hoheiSizeVal').textContent = s.hohei.size ?? 75;
@@ -304,11 +306,12 @@ function applySettings(s) {
   document.getElementById('hoheiStroke').checked = s.hohei.stroke ?? false;
 
   document.getElementById('jinjaEnabled').checked = s.jinja.enabled ?? true;
-  document.getElementById('jinjaText').value = s.jinja.text || "神社名";
-  document.getElementById('jinjaColor').value = s.jinja.color || "#000000";
-  jinjaFont = s.jinja.font || 'KouzanBrushFont';
+  document.getElementById('jinjaText').value = s.jinja.text ?? "神社名";
+  document.getElementById('jinjaColor').value = s.jinja.color ?? "#000000";
+  jinjaFont = s.jinja.font ?? 'KouzanBrushFont';
   document.getElementById('jinjaFont').value = jinjaFont;
-  jinjaX = s.jinja.x ?? 258; jinjaY = s.jinja.y ?? 50;
+  jinjaX = s.jinja.x ?? 258;
+  jinjaY = s.jinja.y ?? 50;
   document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
   document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
   document.getElementById('jinjaSize').value = s.jinja.size ?? 80; document.getElementById('jinjaSizeVal').textContent = s.jinja.size ?? 80;
@@ -319,8 +322,8 @@ function applySettings(s) {
   currentMonth = s.currentMonth ?? new Date().getMonth() + 1;
   document.getElementById('yearSelect').value = s.year ?? new Date().getFullYear();
 
-  filePrefix = s.filePrefix || 'Nameless Shrine';
-  document.getElementById('filePrefix').value = s.filePrefix || '';
+  filePrefix = s.filePrefix ?? 'Nameless Shrine';
+  document.getElementById('filePrefix').value = s.filePrefix ?? '';
 
   Promise.all(loadPromises).then(() => {
     renderStampList();
