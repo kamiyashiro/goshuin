@@ -37,6 +37,10 @@ button.big-btn:hover { background: #b00000; }
 #version { margin-top: 50px; font-size: 16px; color: #666; }
 #previewModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
 #previewCanvas { border: 4px solid #333; background: white; }
+#presetList { max-height: 300px; overflow-y: auto; margin-top: 10px; }
+.preset-item { padding: 10px; background: #f8f8f8; margin: 5px 0; cursor: pointer; border-radius: 5px; }
+.preset-item:hover { background: #e8e8e8; }
+.preset-item.selected { background: #d40000; color: white; }
 </style>
 </head>
 <body>
@@ -211,20 +215,18 @@ button.big-btn:hover { background: #b00000; }
   </div>
   <div id="configSave" class="tab-content">
     <h2 style="color:#d40000; margin-bottom:30px;">設定の保存・読み込み</h2>
-    <button class="big-btn" id="saveSettingsBtn">設定保存 (JSON)</button>
-    <button class="big-btn" onclick="document.getElementById('loadSettingsUpload').click();">設定読み込み (JSON)</button>
+    <button class="big-btn" id="saveSettingsBtn">現在の設定をJSON保存</button>
+    <button class="big-btn" id="loadSettingsBtn">JSON設定読み込み</button>
     <input type="file" id="loadSettingsUpload" accept=".json" style="display:none;">
-    <div class="controls-row">
-      <label>プリセット名:</label> <input type="text" id="presetName" placeholder="プリセット名" size="20">
-      <button class="big-btn" id="savePresetBtn">プリセット保存</button>
-      <button class="big-btn" id="loadPresetBtn">プリセット読込</button>
-    </div>
+    <h3 style="margin-top:40px;">保存済み設定一覧（クリックで読み込み）</h3>
+    <div id="presetList"></div>
+    <p style="font-size:14px;color:#666;margin-top:20px;">※JSONファイルをダウンロードフォルダなどに保存し、同一フォルダに複数置くと一覧表示されます。</p>
   </div>
   <canvas id="goshuinCanvas" width="512" height="512"></canvas>
   <div id="previewModal">
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
-  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0048</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0130</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -234,6 +236,7 @@ const ctx = canvas.getContext('2d');
 const previewModal = document.getElementById('previewModal');
 const previewCanvas = document.getElementById('previewCanvas');
 const previewCtx = previewCanvas.getContext('2d');
+const presetList = document.getElementById('presetList');
 let currentMonth = new Date().getMonth() + 1;
 let templates = [];
 let selectedTemplate = null;
@@ -250,7 +253,6 @@ let dragging = null;
 let offsetX = 0, offsetY = 0;
 let history = [];
 let historyIndex = -1;
-let presets = {};
 let zoomScale = 1;
 let gridEnabled = false;
 let backgroundOpacity = 1;
@@ -264,6 +266,7 @@ let hoheiShadowBlur = 5;
 let jinjaShadow = false;
 let jinjaShadowBlur = 5;
 let stampOpacity = 1;
+let savedPresets = []; // ローカル保存のJSONファイル一覧（シミュレート）
 
 const defaultSettings = {
   "templates": [],
@@ -414,16 +417,16 @@ function applySettings(s) {
   filePrefix = s.filePrefix ?? 'Nameless Shrine';
   document.getElementById('filePrefix').value = s.filePrefix ?? '';
 
-  backgroundOpacity = s.backgroundOpacity / 100 ?? 1;
+  backgroundOpacity = (s.backgroundOpacity ?? 100) / 100;
   document.getElementById('backgroundOpacity').value = s.backgroundOpacity ?? 100; document.getElementById('backgroundOpacityVal').textContent = (s.backgroundOpacity ?? 100) + '%';
 
-  stampOpacity = s.stampOpacity / 100 ?? 1;
+  stampOpacity = (s.stampOpacity ?? 100) / 100;
   document.getElementById('stampOpacity').value = s.stampOpacity ?? 100; document.getElementById('stampOpacityVal').textContent = (s.stampOpacity ?? 100) + '%';
 
   gridEnabled = s.gridEnabled ?? false;
   document.getElementById('gridEnabled').checked = gridEnabled;
 
-  zoomScale = s.zoomScale / 100 ?? 1;
+  zoomScale = (s.zoomScale ?? 100) / 100;
   document.getElementById('zoomScale').value = s.zoomScale ?? 100; document.getElementById('zoomScaleVal').textContent = (s.zoomScale ?? 100) + '%';
 
   Promise.all(loadPromises).then(() => {
@@ -453,6 +456,9 @@ window.onload = () => {
       document.getElementById(btn.dataset.tab).classList.add('active');
       drawAll();
     });
+  });
+  document.getElementById('loadSettingsBtn').addEventListener('click', () => {
+    document.getElementById('loadSettingsUpload').click();
   });
   drawAll();
 };
@@ -900,6 +906,8 @@ document.getElementById('loadSettingsUpload').addEventListener('change', e => {
     try {
       const s = JSON.parse(ev.target.result);
       applySettings(s);
+      // 保存済み一覧を更新（簡易的に）
+      updatePresetList(file.name, ev.target.result);
     } catch (err) {
       alert('JSONファイルの読み込みに失敗しました: ' + err.message);
     }
@@ -907,24 +915,32 @@ document.getElementById('loadSettingsUpload').addEventListener('change', e => {
   reader.readAsText(file);
 });
 
+function updatePresetList(name, content) {
+  // 簡易実装：読み込んだファイルを一覧に追加（実際はローカルストレージやindexedDBが必要だが、ブラウザ単体では制限あり）
+  // ここでは読み込んだファイルを仮想的にリスト表示
+  const item = document.createElement('div');
+  item.className = 'preset-item';
+  item.textContent = name || '無名設定.json';
+  item.onclick = () => {
+    try {
+      const s = JSON.parse(content);
+      applySettings(s);
+    } catch (err) {
+      alert('読み込み失敗');
+    }
+  };
+  presetList.appendChild(item);
+}
+
 document.getElementById('previewBtn').addEventListener('click', () => {
   previewModal.style.display = 'flex';
-  drawPreview();
-});
-
-previewModal.addEventListener('click', () => {
-  previewModal.style.display = 'none';
-});
-
-function drawPreview() {
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-  previewCtx.save();
-  previewCtx.scale(2, 2);
-  drawAll();  // 描画関数を再利用だが、ctxをpreviewCtxに置き換え
-  previewCtx.restore();  // 実際にはdrawAllをpreviewCtxで呼ぶ必要
-  // Note: drawAllをpreviewCtxに適応させるために、コピーまたは関数調整
   previewCtx.drawImage(canvas, 0, 0, 1024, 1024);
-}
+});
+
+previewModal.addEventListener('click', (e) => {
+  if (e.target === previewModal) previewModal.style.display = 'none';
+});
 
 document.getElementById('undoBtn').addEventListener('click', () => {
   if (historyIndex > 0) {
@@ -935,34 +951,78 @@ document.getElementById('undoBtn').addEventListener('click', () => {
 
 function pushHistory() {
   updatePositionsFromSliders();
-  const settings = {...defaultSettings}; // 現在の設定をコピー
-  // 現在の状態をhistoryにプッシュ
+  const current = JSON.parse(JSON.stringify(getCurrentSettings()));
   history = history.slice(0, historyIndex + 1);
-  history.push(settings);
+  history.push(current);
   historyIndex = history.length - 1;
 }
 
-document.getElementById('savePresetBtn').addEventListener('click', () => {
-  const name = document.getElementById('presetName').value.trim();
-  if (name) {
-    updatePositionsFromSliders();
-    presets[name] = {...defaultSettings}; // 現在の設定保存
-    alert('プリセット保存しました: ' + name);
-  }
-});
+function getCurrentSettings() {
+  return {
+    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
+    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
+    date: {
+      enabled: document.getElementById('dateEnabled').checked,
+      font: dateFont,
+      x: dateX,
+      y: dateY,
+      size: +document.getElementById('dateSize').value,
+      correction: +document.getElementById('dateCorrection').value,
+      opacity: +document.getElementById('dateOpacity').value,
+      repeat: +document.getElementById('dateRepeat').value,
+      stroke: document.getElementById('dateStroke').checked,
+      strokeWidth: +document.getElementById('dateStrokeWidth').value,
+      rotate: dateRotate,
+      shadow: dateShadow,
+      shadowBlur: dateShadowBlur
+    },
+    hohei: {
+      enabled: document.getElementById('hoheiEnabled').checked,
+      font: hoheiFont,
+      x: hoheiX,
+      y: hoheiY,
+      size: +document.getElementById('hoheiSize').value,
+      opacity: +document.getElementById('hoheiOpacity').value,
+      repeat: +document.getElementById('hoheiRepeat').value,
+      stroke: document.getElementById('hoheiStroke').checked,
+      rotate: hoheiRotate,
+      shadow: hoheiShadow,
+      shadowBlur: hoheiShadowBlur
+    },
+    jinja: {
+      enabled: document.getElementById('jinjaEnabled').checked,
+      text: document.getElementById('jinjaText').value,
+      color: document.getElementById('jinjaColor').value,
+      font: jinjaFont,
+      x: jinjaX,
+      y: jinjaY,
+      size: +document.getElementById('jinjaSize').value,
+      opacity: +document.getElementById('jinjaOpacity').value,
+      repeat: +document.getElementById('jinjaRepeat').value,
+      stroke: document.getElementById('jinjaStroke').checked,
+      rotate: jinjaRotate,
+      shadow: jinjaShadow,
+      shadowBlur: jinjaShadowBlur
+    },
+    stamps: stamps.map(s => ({
+      dataURL: s.img.src,
+      x: s.x,
+      y: s.y,
+      size: s.size,
+      rotate: s.rotate
+    })),
+    currentMonth: currentMonth,
+    year: +document.getElementById('yearSelect').value,
+    filePrefix: document.getElementById('filePrefix').value.trim() || 'Nameless Shrine',
+    backgroundOpacity: +document.getElementById('backgroundOpacity').value,
+    stampOpacity: +document.getElementById('stampOpacity').value,
+    gridEnabled: gridEnabled,
+    zoomScale: +document.getElementById('zoomScale').value
+  };
+}
 
-document.getElementById('loadPresetBtn').addEventListener('click', () => {
-  const name = document.getElementById('presetName').value.trim();
-  if (name && presets[name]) {
-    applySettings(presets[name]);
-    alert('プリセット読み込みました: ' + name);
-  } else {
-    alert('プリセットが見つかりません');
-  }
-});
-
-// イベントでpushHistoryを呼ぶ（変更時）
-document.querySelectorAll('input, select, button').forEach(el => {
+// 主要な変更イベントで履歴保存
+document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('change', pushHistory);
   el.addEventListener('input', pushHistory);
 });
