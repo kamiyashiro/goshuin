@@ -59,7 +59,7 @@ button.big-btn:hover { background: #b00000; }
   </div>
 
   <div id="background" class="tab-content active">
-    <p>背景画像をアップロードしてください（複数可）</p>
+    <p>テンプレート画像をアップロードしてください（複数可）</p>
     <input type="file" id="templateUpload" accept="image/*" multiple>
     <div class="controls-row">
       <label>背景透明度:</label>
@@ -243,7 +243,7 @@ button.big-btn:hover { background: #b00000; }
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
 
-  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0509</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.20260105.0600</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -279,116 +279,201 @@ let backgroundX = 0, backgroundY = 0;
 let currentPresetFileName = null;
 let isUnsaved = false;
 
-function updateAllSliderDisplays() {
-  document.getElementById('backgroundOpacityVal').textContent = document.getElementById('backgroundOpacity').value + '%';
-  document.getElementById('backgroundScaleVal').textContent = document.getElementById('backgroundScale').value + '%';
-  document.getElementById('backgroundXVal').textContent = document.getElementById('backgroundX').value;
-  document.getElementById('backgroundYVal').textContent = document.getElementById('backgroundY').value;
-  document.getElementById('dateXVal').textContent = document.getElementById('dateX').value;
-  document.getElementById('dateYVal').textContent = document.getElementById('dateY').value;
-  document.getElementById('dateSizeVal').textContent = document.getElementById('dateSize').value;
-  document.getElementById('dateCorrectionVal').textContent = document.getElementById('dateCorrection').value;
-  document.getElementById('dateOpacityVal').textContent = document.getElementById('dateOpacity').value + '%';
-  document.getElementById('dateRepeatVal').textContent = document.getElementById('dateRepeat').value;
-  document.getElementById('dateRotateVal').textContent = document.getElementById('dateRotate').value + '°';
-  document.getElementById('dateStrokeWidthVal').textContent = document.getElementById('dateStrokeWidth').value;
-  document.getElementById('hoheiXVal').textContent = document.getElementById('hoheiX').value;
-  document.getElementById('hoheiYVal').textContent = document.getElementById('hoheiY').value;
-  document.getElementById('hoheiSizeVal').textContent = document.getElementById('hoheiSize').value;
-  document.getElementById('hoheiOpacityVal').textContent = document.getElementById('hoheiOpacity').value + '%';
-  document.getElementById('hoheiRepeatVal').textContent = document.getElementById('hoheiRepeat').value;
-  document.getElementById('hoheiRotateVal').textContent = document.getElementById('hoheiRotate').value + '°';
-  document.getElementById('jinjaXVal').textContent = document.getElementById('jinjaX').value;
-  document.getElementById('jinjaYVal').textContent = document.getElementById('jinjaY').value;
-  document.getElementById('jinjaSizeVal').textContent = document.getElementById('jinjaSize').value;
-  document.getElementById('jinjaOpacityVal').textContent = document.getElementById('jinjaOpacity').value + '%';
-  document.getElementById('jinjaRepeatVal').textContent = document.getElementById('jinjaRepeat').value;
-  document.getElementById('jinjaRotateVal').textContent = document.getElementById('jinjaRotate').value + '°';
-  document.getElementById('stampSizeVal').textContent = document.getElementById('stampSize').value;
-  document.getElementById('stampRotateVal').textContent = document.getElementById('stampRotate').value + '°';
-  document.getElementById('stampOpacityVal').textContent = document.getElementById('stampOpacity').value + '%';
+const defaultSettings = {
+  templates: [],
+  selectedTemplateId: null,
+  date: {enabled: true, font: "KouzanBrushFont", x: 72, y: 36, size: 36, correction: 0, opacity: 100, repeat: 4, stroke: false, strokeWidth: 2, rotate: 0},
+  hohei: {enabled: true, font: "KouzanBrushFont", x: 457, y: 46, size: 75, opacity: 100, repeat: 4, stroke: false, rotate: 0},
+  jinja: {enabled: true, text: "神社名", color: "#000000", font: "KouzanBrushFont", x: 258, y: 50, size: 80, opacity: 100, repeat: 4, stroke: false, rotate: 0},
+  stamps: [],
+  currentMonth: new Date().getMonth() + 1,
+  year: new Date().getFullYear(),
+  filePrefix: "Nameless Shrine",
+  backgroundOpacity: 100,
+  stampOpacity: 100,
+  backgroundScale: 100,
+  backgroundX: 0,
+  backgroundY: 0
+};
+
+function getCurrentSettings() {
+  return {
+    templates: templates.map(t => ({id: t.id, dataURL: t.dataURL})),
+    selectedTemplateId: selectedTemplate ? selectedTemplate.id : null,
+    date: {
+      enabled: document.getElementById('dateEnabled').checked,
+      font: dateFont,
+      x: dateX,
+      y: dateY,
+      size: +document.getElementById('dateSize').value,
+      correction: +document.getElementById('dateCorrection').value,
+      opacity: +document.getElementById('dateOpacity').value,
+      repeat: +document.getElementById('dateRepeat').value,
+      stroke: document.getElementById('dateStroke').checked,
+      strokeWidth: +document.getElementById('dateStrokeWidth').value,
+      rotate: dateRotate
+    },
+    hohei: {
+      enabled: document.getElementById('hoheiEnabled').checked,
+      font: hoheiFont,
+      x: hoheiX,
+      y: hoheiY,
+      size: +document.getElementById('hoheiSize').value,
+      opacity: +document.getElementById('hoheiOpacity').value,
+      repeat: +document.getElementById('hoheiRepeat').value,
+      stroke: document.getElementById('hoheiStroke').checked,
+      rotate: hoheiRotate
+    },
+    jinja: {
+      enabled: document.getElementById('jinjaEnabled').checked,
+      text: document.getElementById('jinjaText').value,
+      color: document.getElementById('jinjaColor').value,
+      font: jinjaFont,
+      x: jinjaX,
+      y: jinjaY,
+      size: +document.getElementById('jinjaSize').value,
+      opacity: +document.getElementById('jinjaOpacity').value,
+      repeat: +document.getElementById('jinjaRepeat').value,
+      stroke: document.getElementById('jinjaStroke').checked,
+      rotate: jinjaRotate
+    },
+    stamps: stamps.map(s => ({dataURL: s.img.src, x: s.x, y: s.y, size: s.size, rotate: s.rotate})),
+    currentMonth: currentMonth,
+    year: +document.getElementById('yearSelect').value,
+    filePrefix: document.getElementById('filePrefix').value.trim() || 'Nameless Shrine',
+    backgroundOpacity: +document.getElementById('backgroundOpacity').value,
+    stampOpacity: +document.getElementById('stampOpacity').value,
+    backgroundScale: +document.getElementById('backgroundScale').value,
+    backgroundX: backgroundX,
+    backgroundY: backgroundY
+  };
 }
 
-function drawAll() {
-  ctx.clearRect(0, 0, 512, 512);
+function applySettings(s, fileName = null) {
+  templates = s.templates || [];
+  selectedTemplate = templates.find(t => t.id === s.selectedTemplateId) || null;
+  renderTemplateList();
 
-  if (selectedTemplate) {
-    const img = new Image();
-    img.src = selectedTemplate.dataURL;
-    img.onload = () => {
-      ctx.save();
-      ctx.translate(256 + backgroundX, 256 + backgroundY);
-      ctx.scale(backgroundScale, backgroundScale);
-      ctx.globalAlpha = backgroundOpacity;
-      ctx.drawImage(img, -256, -256, 512, 512);
-      ctx.restore();
-      drawRest();
-    };
-    if (img.complete) img.onload();
-  } else {
-    drawRest();
-  }
-}
-
-function drawRest() {
-  stamps.forEach(s => {
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.rotate(s.rotate * Math.PI / 180);
-    ctx.globalAlpha = stampOpacity;
-    ctx.globalCompositeOperation = 'multiply';
-    ctx.drawImage(s.img, -s.size / 2, -s.size / 2, s.size, s.size);
-    ctx.restore();
+  stamps = [];
+  selectedStampIndex = null;
+  const loadPromises = (s.stamps || []).map(stampData => {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        stamps.push({
+          img: img,
+          x: stampData.x ?? 256,
+          y: stampData.y ?? 256,
+          size: stampData.size ?? 150,
+          rotate: stampData.rotate ?? 0
+        });
+        resolve();
+      };
+      img.src = stampData.dataURL;
+    });
   });
 
-  if (document.getElementById('dateEnabled').checked) {
-    const dateStr = getJapaneseDate(+document.getElementById('yearSelect').value, currentMonth);
-    drawVertical(dateStr, dateX, dateY, +document.getElementById('dateSize').value, +document.getElementById('dateOpacity').value / 100, +document.getElementById('dateRepeat').value, document.getElementById('dateStroke').checked, +document.getElementById('dateStrokeWidth').value, +document.getElementById('dateCorrection').value, '#000', dateFont, dateRotate * Math.PI / 180);
-  }
+  document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
+  dateFont = s.date.font ?? 'KouzanBrushFont';
+  document.getElementById('dateFont').value = dateFont;
+  dateX = s.date.x ?? 72;
+  dateY = s.date.y ?? 36;
+  document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
+  document.getElementById('dateY').value = dateY; document.getElementById('dateYVal').textContent = dateY;
+  document.getElementById('dateSize').value = s.date.size ?? 36; document.getElementById('dateSizeVal').textContent = s.date.size ?? 36;
+  document.getElementById('dateCorrection').value = s.date.correction ?? 0; document.getElementById('dateCorrectionVal').textContent = s.date.correction ?? 0;
+  document.getElementById('dateOpacity').value = s.date.opacity ?? 100; document.getElementById('dateOpacityVal').textContent = (s.date.opacity ?? 100) + '%';
+  document.getElementById('dateRepeat').value = s.date.repeat ?? 4; document.getElementById('dateRepeatVal').textContent = s.date.repeat ?? 4;
+  document.getElementById('dateStroke').checked = s.date.stroke ?? false;
+  document.getElementById('dateStrokeWidth').value = s.date.strokeWidth ?? 2; document.getElementById('dateStrokeWidthVal').textContent = s.date.strokeWidth ?? 2;
+  dateRotate = s.date.rotate ?? 0;
+  document.getElementById('dateRotate').value = dateRotate; document.getElementById('dateRotateVal').textContent = dateRotate + '°';
 
-  if (document.getElementById('hoheiEnabled').checked) {
-    drawVertical('奉拝', hoheiX, hoheiY, +document.getElementById('hoheiSize').value, +document.getElementById('hoheiOpacity').value / 100, +document.getElementById('hoheiRepeat').value, document.getElementById('hoheiStroke').checked, 2, 0, '#000', hoheiFont, hoheiRotate * Math.PI / 180);
-  }
+  document.getElementById('hoheiEnabled').checked = s.hohei.enabled ?? true;
+  hoheiFont = s.hohei.font ?? 'KouzanBrushFont';
+  document.getElementById('hoheiFont').value = hoheiFont;
+  hoheiX = s.hohei.x ?? 457;
+  hoheiY = s.hohei.y ?? 46;
+  document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
+  document.getElementById('hoheiY').value = hoheiY; document.getElementById('hoheiYVal').textContent = hoheiY;
+  document.getElementById('hoheiSize').value = s.hohei.size ?? 75; document.getElementById('hoheiSizeVal').textContent = s.hohei.size ?? 75;
+  document.getElementById('hoheiOpacity').value = s.hohei.opacity ?? 100; document.getElementById('hoheiOpacityVal').textContent = (s.hohei.opacity ?? 100) + '%';
+  document.getElementById('hoheiRepeat').value = s.hohei.repeat ?? 4; document.getElementById('hoheiRepeatVal').textContent = s.hohei.repeat ?? 4;
+  document.getElementById('hoheiStroke').checked = s.hohei.stroke ?? false;
+  hoheiRotate = s.hohei.rotate ?? 0;
+  document.getElementById('hoheiRotate').value = hoheiRotate; document.getElementById('hoheiRotateVal').textContent = hoheiRotate + '°';
 
-  if (document.getElementById('jinjaEnabled').checked) {
-    const color = document.getElementById('jinjaColor').value;
-    drawVertical(document.getElementById('jinjaText').value, jinjaX, jinjaY, +document.getElementById('jinjaSize').value, +document.getElementById('jinjaOpacity').value / 100, +document.getElementById('jinjaRepeat').value, document.getElementById('jinjaStroke').checked, 2, 0, color, jinjaFont, jinjaRotate * Math.PI / 180);
-  }
+  document.getElementById('jinjaEnabled').checked = s.jinja.enabled ?? true;
+  document.getElementById('jinjaText').value = s.jinja.text ?? "神社名";
+  document.getElementById('jinjaColor').value = s.jinja.color ?? "#000000";
+  jinjaFont = s.jinja.font ?? 'KouzanBrushFont';
+  document.getElementById('jinjaFont').value = jinjaFont;
+  jinjaX = s.jinja.x ?? 258;
+  jinjaY = s.jinja.y ?? 50;
+  document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
+  document.getElementById('jinjaY').value = jinjaY; document.getElementById('jinjaYVal').textContent = jinjaY;
+  document.getElementById('jinjaSize').value = s.jinja.size ?? 80; document.getElementById('jinjaSizeVal').textContent = s.jinja.size ?? 80;
+  document.getElementById('jinjaOpacity').value = s.jinja.opacity ?? 100; document.getElementById('jinjaOpacityVal').textContent = (s.jinja.opacity ?? 100) + '%';
+  document.getElementById('jinjaRepeat').value = s.jinja.repeat ?? 4; document.getElementById('jinjaRepeatVal').textContent = s.jinja.repeat ?? 4;
+  document.getElementById('jinjaStroke').checked = s.jinja.stroke ?? false;
+  jinjaRotate = s.jinja.rotate ?? 0;
+  document.getElementById('jinjaRotate').value = jinjaRotate; document.getElementById('jinjaRotateVal').textContent = jinjaRotate + '°';
+
+  currentMonth = s.currentMonth ?? new Date().getMonth() + 1;
+  document.getElementById('yearSelect').value = s.year ?? new Date().getFullYear();
+  filePrefix = s.filePrefix ?? 'Nameless Shrine';
+  document.getElementById('filePrefix').value = s.filePrefix ?? '';
+  backgroundOpacity = (s.backgroundOpacity ?? 100) / 100;
+  document.getElementById('backgroundOpacity').value = s.backgroundOpacity ?? 100;
+  document.getElementById('backgroundOpacityVal').textContent = (s.backgroundOpacity ?? 100) + '%';
+  stampOpacity = (s.stampOpacity ?? 100) / 100;
+  document.getElementById('stampOpacity').value = s.stampOpacity ?? 100;
+  document.getElementById('stampOpacityVal').textContent = (s.stampOpacity ?? 100) + '%';
+  backgroundScale = (s.backgroundScale ?? 100) / 100;
+  document.getElementById('backgroundScale').value = s.backgroundScale ?? 100;
+  document.getElementById('backgroundScaleVal').textContent = (s.backgroundScale ?? 100) + '%';
+  backgroundX = s.backgroundX ?? 0;
+  document.getElementById('backgroundX').value = backgroundX;
+  document.getElementById('backgroundXVal').textContent = backgroundX;
+  backgroundY = s.backgroundY ?? 0;
+  document.getElementById('backgroundY').value = backgroundY;
+  document.getElementById('backgroundYVal').textContent = backgroundY;
+
+  Promise.all(loadPromises).then(() => {
+    renderStampList();
+    updateStampControls();
+    drawAll();
+  });
+
+  currentPresetFileName = fileName;
+  currentPresetName.textContent = fileName || '新規設定';
+  isUnsaved = false;
+  unsavedIndicator.textContent = '';
 }
 
-function drawVertical(text, x, y, size, opacity, repeat, stroke, strokeWidth, correction = 0, color = '#000', fontFamily = 'KouzanBrushFont', rotate = 0) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(rotate);
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillStyle = color;
-  ctx.globalAlpha = opacity;
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = strokeWidth;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const curSize = size + correction;
-    ctx.font = `bold ${curSize}px "${fontFamily}", sans-serif`;
-    for (let r = 0; r < repeat; r++) ctx.fillText(ch, 0, i * size * 1.15);
-    if (stroke) for (let r = 0; r < repeat; r++) ctx.strokeText(ch, 0, i * size * 1.15);
+function markUnsaved() {
+  if (!isUnsaved) {
+    isUnsaved = true;
+    unsavedIndicator.textContent = '（変更未保存）';
   }
-  ctx.restore();
 }
 
 function resetBackgroundScale() {
-  document.getElementById('backgroundScale').value = 100;
   backgroundScale = 1;
-  updateAllSliderDisplays();
+  document.getElementById('backgroundScale').value = 100;
+  document.getElementById('backgroundScaleVal').textContent = '100%';
+  markUnsaved();
   drawAll();
 }
 
 function resetBackgroundPosition() {
-  document.getElementById('backgroundX').value = 0;
-  document.getElementById('backgroundY').value = 0;
   backgroundX = 0;
   backgroundY = 0;
-  updateAllSliderDisplays();
+  document.getElementById('backgroundX').value = 0;
+  document.getElementById('backgroundXVal').textContent = 0;
+  document.getElementById('backgroundY').value = 0;
+  document.getElementById('backgroundYVal').textContent = 0;
+  markUnsaved();
   drawAll();
 }
 
@@ -398,13 +483,14 @@ function fitBackground() {
   img.src = selectedTemplate.dataURL;
   img.onload = () => {
     const ratio = Math.min(512 / img.width, 512 / img.height);
-    document.getElementById('backgroundScale').value = Math.round(ratio * 100);
     backgroundScale = ratio;
     backgroundX = 0;
     backgroundY = 0;
+    document.getElementById('backgroundScale').value = Math.round(ratio * 100);
+    document.getElementById('backgroundScaleVal').textContent = Math.round(ratio * 100) + '%';
     document.getElementById('backgroundX').value = 0;
     document.getElementById('backgroundY').value = 0;
-    updateAllSliderDisplays();
+    markUnsaved();
     drawAll();
   };
 }
@@ -422,10 +508,12 @@ function renderTemplateList() {
         templates = templates.filter(tt => tt.id !== t.id);
         if (selectedTemplate && selectedTemplate.id === t.id) selectedTemplate = null;
         renderTemplateList();
+        markUnsaved();
         drawAll();
       } else {
         selectedTemplate = t;
         renderTemplateList();
+        markUnsaved();
         drawAll();
       }
     };
@@ -446,6 +534,7 @@ function renderStampList() {
         stamps.splice(i, 1);
         if (selectedStampIndex >= i) selectedStampIndex = selectedStampIndex > 0 ? selectedStampIndex - 1 : null;
         renderStampList();
+        markUnsaved();
         drawAll();
       } else {
         selectedStampIndex = i;
@@ -463,6 +552,7 @@ function updateStampControls() {
   document.getElementById('stampSize').value = s.size;
   document.getElementById('stampRotate').value = s.rotate;
   updateAllSliderDisplays();
+  drawAll();
 }
 
 function setCustomFont(type) {
@@ -471,6 +561,7 @@ function setCustomFont(type) {
     if (type === 'date') dateFont = input.value.trim();
     if (type === 'hohei') hoheiFont = input.value.trim();
     if (type === 'jinja') jinjaFont = input.value.trim();
+    markUnsaved();
     drawAll();
   }
 }
@@ -596,73 +687,20 @@ document.querySelectorAll('input[type="range"], input[type="checkbox"], select, 
     dateRotate = +document.getElementById('dateRotate').value;
     hoheiRotate = +document.getElementById('hoheiRotate').value;
     jinjaRotate = +document.getElementById('jinjaRotate').value;
+    dateX = +document.getElementById('dateX').value;
+    dateY = +document.getElementById('dateY').value;
+    hoheiX = +document.getElementById('hoheiX').value;
+    hoheiY = +document.getElementById('hoheiY').value;
+    jinjaX = +document.getElementById('jinjaX').value;
+    jinjaY = +document.getElementById('jinjaY').value;
+    if (selectedStampIndex !== null) {
+      stamps[selectedStampIndex].size = +document.getElementById('stampSize').value;
+      stamps[selectedStampIndex].rotate = +document.getElementById('stampRotate').value;
+    }
     updateAllSliderDisplays();
     drawAll();
   });
 });
-
-document.getElementById('downloadBtn').onclick = () => {
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = `${filePrefix || 'Nameless Shrine'}_${document.getElementById('yearSelect').value}_${String(currentMonth).padStart(2, '0')}.png`;
-  link.click();
-};
-
-document.getElementById('previewBtn').onclick = () => {
-  previewCtx.drawImage(canvas, 0, 0, 1024, 1024);
-  previewModal.style.display = 'flex';
-};
-
-previewModal.onclick = () => previewModal.style.display = 'none';
-
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-  };
-});
-
-document.getElementById('templateUpload').onchange = e => {
-  Array.from(e.target.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const id = Date.now();
-      templates.push({id, dataURL: ev.target.result});
-      if (!selectedTemplate) selectedTemplate = templates[templates.length - 1];
-      renderTemplateList();
-      drawAll();
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
-document.getElementById('stampUpload').onchange = e => {
-  Array.from(e.target.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        stamps.push({img, x: 256, y: 256, size: 150, rotate: 0});
-        renderStampList();
-        drawAll();
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
-document.getElementById('prevMonthBtn').onclick = () => {
-  currentMonth = currentMonth > 1 ? currentMonth - 1 : 12;
-  drawAll();
-};
-
-document.getElementById('nextMonthBtn').onclick = () => {
-  currentMonth = currentMonth < 12 ? currentMonth + 1 : 1;
-  drawAll();
-};
 
 window.onload = () => {
   const yearSelect = document.getElementById('yearSelect');
@@ -674,6 +712,7 @@ window.onload = () => {
     if (y === currentYear) opt.selected = true;
     yearSelect.appendChild(opt);
   }
+  applySettings(defaultSettings);
   updateAllSliderDisplays();
   drawAll();
 };
