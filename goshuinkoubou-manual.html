@@ -16,19 +16,58 @@
     line-height: 1.8;
   }
   #wrap {
-    max-width: 900px;
-    margin: 40px auto;
+    display: flex;
+    min-height: 100vh;
+  }
+  aside {
+    width: 250px;
+    background: #f0e8e0;
+    padding: 30px 20px;
+    border-right: 1px solid #ddd;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  aside h3 {
+    font-size: 20px;
+    color: #b71c1c;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+  aside ul {
+    list-style: none;
+    padding: 0;
+  }
+  aside li {
+    margin-bottom: 8px;
+  }
+  aside a {
+    display: block;
+    padding: 12px 15px;
+    color: #b71c1c;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+  aside a:hover, aside a.active {
     background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-weight: 700;
+  }
+  main {
+    flex: 1;
+    padding: 40px 50px 80px 300px; /* 左サイド分の余白 */
+    max-width: 900px;
+    margin: 0 auto;
   }
   header {
-    background: linear-gradient(to bottom, #f5f0e8, #fff);
-    padding: 50px 30px;
     text-align: center;
+    padding: 40px 0;
     border-bottom: 1px solid #e0d0c0;
+    margin-bottom: 40px;
   }
   h1 {
     font-size: 40px;
@@ -41,42 +80,6 @@
     font-size: 18px;
     color: #666;
     margin-top: 15px;
-  }
-  nav {
-    background: #f0e8e0;
-    padding: 40px 20px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-  }
-  .nav-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  nav a {
-    display: block;
-    padding: 18px 24px;
-    background: #fff;
-    color: #b71c1c;
-    text-decoration: none;
-    font-size: 17px;
-    font-weight: 700;
-    border: 2px solid #b71c1c;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-    text-align: center;
-  }
-  nav a:hover {
-    background: #b71c1c;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-  }
-  main {
-    padding: 40px 50px;
   }
   section {
     margin-bottom: 60px;
@@ -134,34 +137,76 @@
     color: #666;
     font-size: 15px;
     border-top: 1px solid #ddd;
+    margin-left: 250px;
+  }
+  @media (max-width: 900px) {
+    #wrap {
+      flex-direction: column;
+    }
+    aside {
+      position: static;
+      width: 100%;
+      height: auto;
+      padding: 20px;
+      border-right: none;
+      border-bottom: 1px solid #ddd;
+    }
+    main {
+      padding: 40px 30px;
+    }
+    footer {
+      margin-left: 0;
+    }
   }
   @media (max-width: 768px) {
-    main { padding: 30px; }
     h1 { font-size: 32px; }
-    .nav-buttons { grid-template-columns: 1fr; }
   }
 </style>
+<script>
+  // スクロール時にアクティブなセクションをハイライト
+  window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('aside a');
+    let current = '';
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.clientHeight;
+      if (pageYOffset >= sectionTop - 200) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === `#${current}`) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
 </head>
 <body>
 <div id="wrap">
-  <header>
-    <h1>御朱印工房</h1>
-    <p class="subtitle">SL Edition 取扱説明書</p>
-  </header>
-
-  <nav>
-    <div class="nav-buttons">
-      <a href="#intro">はじめに</a>
-      <a href="#material">必要な素材と準備</a>
-      <a href="#flow">操作の基本的な流れ</a>
-      <a href="#tabs">各タブの詳細説明</a>
-      <a href="#tips">便利なTipsとコツ</a>
-      <a href="#trouble">よくある質問</a>
-      <a href="#end">最後に</a>
-    </div>
-  </nav>
+  <aside>
+    <h3>目次</h3>
+    <ul>
+      <li><a href="#intro">はじめに</a></li>
+      <li><a href="#material">必要な素材と準備</a></li>
+      <li><a href="#flow">操作の基本的な流れ</a></li>
+      <li><a href="#tabs">各タブの詳細説明</a></li>
+      <li><a href="#tips">便利なTipsとコツ</a></li>
+      <li><a href="#trouble">よくある質問</a></li>
+      <li><a href="#end">最後に</a></li>
+    </ul>
+  </aside>
 
   <main>
+    <header>
+      <h1>御朱印工房</h1>
+      <p class="subtitle">SL Edition 取扱説明書</p>
+    </header>
+
     <section id="intro">
       <h2>はじめに</h2>
       <p>御朱印工房 - SL Edition は、Second Life（SL）内で神社を運営されている方のための、ブラウザで使える御朱印画像作成ツールです。</p>
@@ -310,11 +355,11 @@
       <p>心を込めてお使いください。</p>
     </section>
   </main>
-
-  <footer>
-    <p>御朱印工房 - SL Edition 取扱説明書</p>
-    <p>Ver.2026010 | 美しい御朱印をお作りください</p>
-  </footer>
 </div>
+
+<footer>
+  <p>御朱印工房 - SL Edition 取扱説明書</p>
+  <p>Ver.2026010 | 美しい御朱印をお作りください</p>
+</footer>
 </body>
 </html>
