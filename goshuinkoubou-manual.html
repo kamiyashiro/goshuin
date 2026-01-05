@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>御朱印工房 - SL Edition 取扱説明書</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Cinzel:wght@700&display=swap');
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1a1a1a, #000);
+    color: #f0f0f0;
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.8;
+  }
+  #wrap {
+    max-width: 1000px;
+    margin: 40px auto;
+    background: rgba(20, 20, 20, 0.95);
+    border: 3px double #d40000;
+    border-radius: 20px;
+    box-shadow: 0 0 40px rgba(212, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(to bottom, #d40000, #b00000);
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 4px solid gold;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 48px;
+    color: gold;
+    margin: 0;
+    text-shadow: 3px 3px 8px #000;
+    letter-spacing: 0.1em;
+  }
+  .subtitle {
+    font-size: 20px;
+    color: white;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  nav {
+    background: #111;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid #d40000;
+  }
+  nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+  nav a:hover {
+    background: #d40000;
+    color: gold;
+  }
+  main {
+    padding: 40px;
+  }
+  section {
+    margin-bottom: 60px;
+    padding: 30px;
+    background: rgba(30, 30, 30, 0.7);
+    border-radius: 15px;
+    border-left: 6px solid #d40000;
+  }
+  h2 {
+    font-size: 32px;
+    color: #d40000;
+    border-bottom: 3px solid gold;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  h3 {
+    font-size: 24px;
+    color: gold;
+    margin-top: 30px;
+  }
+  ul, ol {
+    padding-left: 30px;
+    font-size: 18px;
+  }
+  li {
+    margin-bottom: 12px;
+  }
+  .tip {
+    background: rgba(212, 0, 0, 0.2);
+    border-left: 5px solid gold;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+    font-style: italic;
+  }
+  .warning {
+    background: rgba(255, 100, 0, 0.2);
+    border-left: 5px solid orange;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+    color: #ffcc00;
+  }
+  footer {
+    text-align: center;
+    padding: 30px;
+    background: #111;
+    color: #888;
+    font-size: 14px;
+  }
+  @media (max-width: 768px) {
+    h1 { font-size: 36px; }
+    nav a { display: block; margin: 10px 0; }
+    main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1>御朱印工房</h1>
+    <p class="subtitle">SL Edition 取扱説明書</p>
+  </header>
+
+  <nav>
+    <a href="#start">はじめに</a>
+    <a href="#basic">基本操作</a>
+    <a href="#tabs">各タブの使い方</a>
+    <a href="#save">設定保存・読込</a>
+    <a href="#output">画像保存</a>
+    <a href="#tips">便利なTips</a>
+  </nav>
+
+  <main>
+    <section id="start">
+      <h2>はじめに</h2>
+      <p>ようこそ、<strong>御朱印工房 - SL Edition</strong> へ！</p>
+      <p>このツールは、オリジナルの御朱印を自由にデザイン・作成できるブラウザ完結型の工房です。</p>
+      <p>背景・日付・奉拝・神社名・朱印を細かく調整でき、衡山毛筆フォントで本格的な仕上がりになります。</p>
+      <div class="tip">
+        必要なもの：<br>
+        ・ブラウザ（Chrome/Firefox推奨）<br>
+        ・KouzanBrushFont.woff2（衡山毛筆フォントのWOFF2版）をHTMLと同じフォルダに置く
+      </div>
+    </section>
+
+    <section id="basic">
+      <h2>基本操作</h2>
+      <ul>
+        <li>ページを開くと、すぐにキャンバスに初期状態の御朱印が表示されます</li>
+        <li>上部のタブをクリックして、各設定画面に移動</li>
+        <li>スライダーやチェックボックスを操作すると、<strong>リアルタイムでキャンバスに反映</strong></li>
+        <li>キャンバスをドラッグすると、文字や背景を移動できます</li>
+      </ul>
+    </section>
+
+    <section id="tabs">
+      <h2>各タブの使い方</h2>
+
+      <h3>背景</h3>
+      <ul>
+        <li>背景画像を複数アップロード可能（クリックで選択）</li>
+        <li>透明度・ズーム・位置調整</li>
+        <li>「背景フィット」で画像をキャンバスにぴったり合わせ</li>
+        <li>サムネイル右上の×で削除</li>
+      </ul>
+
+      <h3>日付</h3>
+      <ul>
+        <li>令和年月吉日を自動生成（年は選択、月は◀▶ボタン）</li>
+        <li>フォントは「衡山毛筆フォント」がデフォルト（即反映！）</li>
+        <li>サイズ・位置・回転・重ね回数・外周線などを調整</li>
+      </ul>
+
+      <h3>奉拝</h3>
+      <ul>
+        <li>「奉拝」の文字を調整</li>
+        <li>フォント・位置・サイズ・回転などを自由に</li>
+      </ul>
+
+      <h3>神社名</h3>
+      <ul>
+        <li>神社名を自由入力（色は黒/赤）</li>
+        <li>File Prefixで保存時のファイル名に反映（半角英数のみ）</li>
+      </ul>
+
+      <h3>朱印</h3>
+      <ul>
+        <li>透過PNGの朱印画像をアップロード（複数可）</li>
+        <li>キャンバス上でドラッグで移動、サイズ・回転・不透明度調整</li>
+        <li>サムネイルクリックで選択、×で削除</li>
+      </ul>
+
+      <h3>画像保存</h3>
+      <ul>
+        <li><strong>単体保存</strong>：現在の月の御朱印をPNGでダウンロード</li>
+        <li><strong>12ヶ月一括 ZIP保存</strong>：現在の設定で1～12月分を一気にZIPでダウンロード</li>
+        <li><strong>拡大プレビュー</strong>：1024×1024で大きく確認</li>
+      </ul>
+
+      <h3>設定保存読込</h3>
+      <ul>
+        <li><strong>現在の設定をJSON保存</strong>：設定をファイルに保存</li>
+        <li><strong>単体JSON読み込み</strong>：保存したJSONを読み込み（一覧にも自動追加）</li>
+        <li><strong>フォルダ選択で一括読み込み</strong>：複数JSONをフォルダごと読み込み</li>
+        <li><strong>読み込み済み設定一覧</strong>：クリックで即適用（変更未保存時は表示あり）</li>
+      </ul>
+    </section>
+
+    <section id="tips">
+      <h2>便利なTips</h2>
+      <ul>
+        <li>衡山毛筆フォントが表示されない → KouzanBrushFont.woff2 が同じフォルダにあるか確認</li>
+        <li>文字がぼやける → 「重ね回数」を4～6に増やすとくっきり</li>
+        <li>外周線を入れると高級感UP！</li>
+        <li>朱印は透過PNGを使うと美しい仕上がりに</li>
+        <li>設定をたくさん作って、一覧からすぐ切り替え可能！</li>
+      </ul>
+      <div class="warning">
+        注意：<br>
+        ・ブラウザのキャッシュをクリア（Ctrl+F5）するとフォントが確実に反映されます<br>
+        ・大規模な背景画像は読み込みに時間がかかる場合があります
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>御朱印工房 - SL Edition　取扱説明書</p>
+    <p>Ver.2026010 | 美しい御朱印作りをお楽しみください</p>
+  </footer>
+</div>
+</body>
+</html>
