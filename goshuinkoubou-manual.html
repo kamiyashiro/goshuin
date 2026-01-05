@@ -44,33 +44,36 @@
   }
   nav {
     background: #f0e8e0;
-    padding: 30px 20px;
+    padding: 40px 20px;
     text-align: center;
     border-bottom: 1px solid #ddd;
   }
   .nav-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
   }
   nav a {
     display: block;
-    padding: 14px 24px;
+    padding: 18px 24px;
     background: #fff;
     color: #b71c1c;
     text-decoration: none;
     font-size: 17px;
     font-weight: 700;
     border: 2px solid #b71c1c;
-    border-radius: 8px;
-    min-width: 220px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: all 0.3s;
+    text-align: center;
   }
   nav a:hover {
     background: #b71c1c;
     color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   }
   main {
     padding: 40px 50px;
@@ -135,8 +138,7 @@
   @media (max-width: 768px) {
     main { padding: 30px; }
     h1 { font-size: 32px; }
-    .nav-buttons { flex-direction: column; align-items: center; }
-    nav a { min-width: 80%; }
+    .nav-buttons { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -198,13 +200,33 @@
         <li>朱印印影がないと御朱印として不完全になるため、必ずご用意ください</li>
       </ul>
 
-      <h3>3. 衡山毛筆フォントファイル</h3>
+      <h3>3. 衡山毛筆フォントについて（推奨）</h3>
+      <p>このツールの最大の特徴は、<strong>衡山毛筆フォント</strong>による本格的な毛筆文字です。</p>
       <ul>
         <li>ファイル名：<strong>KouzanBrushFont.woff2</strong></li>
         <li>ツール本体（goshuin_sl_edition.html）と同じフォルダに置いてください</li>
-        <li>これにより、ページを開いた瞬間から本格的な毛筆文字が表示されます</li>
-        <li>入手先：オープンフォントライセンスの衡山毛筆フォントをWOFF2形式に変換（または代替オープンソース版を使用）</li>
+        <li>ページを開いた瞬間から美しい毛筆文字が即反映されます（プリロード機能搭載）</li>
+        <li>入手方法：公式サイト「opentype.jp」から衡山毛筆フォントをダウンロード後、WOFF2形式に変換<br>
+          または、GitHubなどで公開されているオープンソース版（Bakudaiなど）を使用（見た目ほぼ同じ）</li>
+        <li>衡山毛筆フォントは商用利用可のフリーフォントです</li>
       </ul>
+      <div class="tip">
+        衡山毛筆フォントを置くと、日付・奉拝・神社名の文字が一気に本格的になります。<br>
+        置かない場合でも、他の可愛い手書き風フォント（Yomogiなど）が自動で代用されます。
+      </div>
+
+      <h3>他のフォントの利用方法</h3>
+      <p>各文字タブの「フォント」ドロップダウンで、以下のフォントを選択可能です：</p>
+      <ul>
+        <li>佑字 肅（Yuji Syuku）</li>
+        <li>佑字 朴（Yuji Boku）</li>
+        <li>Zen Old Mincho</li>
+        <li>Klee One</li>
+        <li>Kosugi Maru</li>
+        <li>Potta One</li>
+        <li>ＭＳ ゴシック / ＭＳ 明朝</li>
+      </ul>
+      <p>さらに、「自由入力」欄に任意のフォント名（Google Fontsなど）を入力し「適用」ボタンでカスタムフォントも使用可能です。</p>
     </section>
 
     <section id="flow">
