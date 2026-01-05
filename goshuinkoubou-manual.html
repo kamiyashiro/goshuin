@@ -59,7 +59,7 @@
   }
   main {
     flex: 1;
-    padding: 40px 50px 80px 300px; /* 左サイド分の余白 */
+    padding: 40px 50px 80px 300px;
     max-width: 900px;
     margin: 0 auto;
   }
@@ -163,23 +163,21 @@
   }
 </style>
 <script>
-  // スクロール時にアクティブなセクションをハイライト
   window.addEventListener('scroll', () => {
     const sections = document.querySelectorAll('section');
     const navLinks = document.querySelectorAll('aside a');
     let current = '';
 
     sections.forEach(section => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.clientHeight;
-      if (pageYOffset >= sectionTop - 200) {
+      const sectionTop = section.offsetTop - 200;
+      if (pageYOffset >= sectionTop) {
         current = section.getAttribute('id');
       }
     });
 
     navLinks.forEach(link => {
       link.classList.remove('active');
-      if (link.getAttribute('href') === `#${current}`) {
+      if (link.getAttribute('href').substring(1) === current) {
         link.classList.add('active');
       }
     });
@@ -315,8 +313,8 @@
       <ul>
         <li>「現在の設定をJSON保存」で設定をファイルに保存</li>
         <li>「単体JSON読み込み」で保存した設定を読み込み</li>
-        <li>「フォルダ選択で一括読み込み」で複数の設定をまとめて登録</li>
-        <li>一覧の設定をクリックするとすぐに適用されます（変更未保存時はオレンジで表示）</li>
+        <li>「フォルダ選択で一括読み込み」で複数の設定をまとめて読み込み</li>
+        <li>読み込み済み設定一覧からクリックするとすぐに適用されます（変更未保存時はオレンジで表示）</li>
       </ul>
     </section>
 
