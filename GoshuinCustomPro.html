@@ -110,17 +110,17 @@ button.big-btn:hover { background: #b00000; }
     <div class="controls-row"><label>表示:</label> <input type="checkbox" id="dateEnabled" checked></div>
     <div class="controls-row">
       <label>フォント:</label>
-      <select id="dateFont" onchange="updateFontAndDraw(this)">
+      <select id="dateFont" onchange="commitFontChange(this)">
         <option value="KouzanBrushFont" selected>衡山毛筆フォント</option>
-        <option value="AoyagiReishoSimo">青柳隷書しも</option>
-        <option value="Yuji Syuku">佑字 肅</option>
-        <option value="Yuji Boku">佑字 朴</option>
-        <option value="Zen Old Mincho">Zen Old Mincho</option>
-        <option value="Klee One">Klee One</option>
-        <option value="Kosugi Maru">Kosugi Maru</option>
-        <option value="Potta One">Potta One</option>
-        <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
-        <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+        <option value="AoyagiReishoSimo" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">青柳隷書しも</option>
+        <option value="Yuji Syuku" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">佑字 肅</option>
+        <option value="Yuji Boku" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">佑字 朴</option>
+        <option value="Zen Old Mincho" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">Zen Old Mincho</option>
+        <option value="Klee One" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">Klee One</option>
+        <option value="Kosugi Maru" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">Kosugi Maru</option>
+        <option value="Potta One" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">Potta One</option>
+        <option value="'MS Gothic', sans-serif" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">ＭＳ ゴシック</option>
+        <option value="'MS Mincho', serif" onmouseover="previewFont('date', this.value)" onmouseout="restoreFont('date')">ＭＳ 明朝</option>
       </select>
       <input type="text" id="dateFontCustom" placeholder="自由入力" size="15">
       <button onclick="setCustomFont('date')">適用</button>
@@ -153,17 +153,17 @@ button.big-btn:hover { background: #b00000; }
   <div id="hohei" class="tab-content">
     <div class="controls-row"><label>表示:</label> <input type="checkbox" id="hoheiEnabled" checked></div>
     <div class="controls-row"><label>フォント:</label>
-      <select id="hoheiFont" onchange="updateFontAndDraw(this)">
+      <select id="hoheiFont" onchange="commitFontChange(this)">
         <option value="KouzanBrushFont" selected>衡山毛筆フォント</option>
-        <option value="AoyagiReishoSimo">青柳隷書しも</option>
-        <option value="Yuji Syuku">佑字 肅</option>
-        <option value="Yuji Boku">佑字 朴</option>
-        <option value="Zen Old Mincho">Zen Old Mincho</option>
-        <option value="Klee One">Klee One</option>
-        <option value="Kosugi Maru">Kosugi Maru</option>
-        <option value="Potta One">Potta One</option>
-        <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
-        <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+        <option value="AoyagiReishoSimo" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">青柳隷書しも</option>
+        <option value="Yuji Syuku" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">佑字 肅</option>
+        <option value="Yuji Boku" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">佑字 朴</option>
+        <option value="Zen Old Mincho" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">Zen Old Mincho</option>
+        <option value="Klee One" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">Klee One</option>
+        <option value="Kosugi Maru" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">Kosugi Maru</option>
+        <option value="Potta One" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">Potta One</option>
+        <option value="'MS Gothic', sans-serif" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">ＭＳ ゴシック</option>
+        <option value="'MS Mincho', serif" onmouseover="previewFont('hohei', this.value)" onmouseout="restoreFont('hohei')">ＭＳ 明朝</option>
       </select>
     </div>
     <div class="controls-row">
@@ -198,17 +198,17 @@ button.big-btn:hover { background: #b00000; }
       <span style="font-size:14px; color:#666;">(半角英数のみ・空欄=Nameless Shrine)</span>
     </div>
     <div class="controls-row"><label>フォント:</label>
-      <select id="jinjaFont" onchange="updateFontAndDraw(this)">
+      <select id="jinjaFont" onchange="commitFontChange(this)">
         <option value="KouzanBrushFont" selected>衡山毛筆フォント</option>
-        <option value="AoyagiReishoSimo">青柳隷書しも</option>
-        <option value="Yuji Syuku">佑字 肅</option>
-        <option value="Yuji Boku">佑字 朴</option>
-        <option value="Zen Old Mincho">Zen Old Mincho</option>
-        <option value="Klee One">Klee One</option>
-        <option value="Kosugi Maru">Kosugi Maru</option>
-        <option value="Potta One">Potta One</option>
-        <option value="'MS Gothic', sans-serif">ＭＳ ゴシック</option>
-        <option value="'MS Mincho', serif">ＭＳ 明朝</option>
+        <option value="AoyagiReishoSimo" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">青柳隷書しも</option>
+        <option value="Yuji Syuku" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">佑字 肅</option>
+        <option value="Yuji Boku" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">佑字 朴</option>
+        <option value="Zen Old Mincho" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">Zen Old Mincho</option>
+        <option value="Klee One" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">Klee One</option>
+        <option value="Kosugi Maru" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">Kosugi Maru</option>
+        <option value="Potta One" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">Potta One</option>
+        <option value="'MS Gothic', sans-serif" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">ＭＳ ゴシック</option>
+        <option value="'MS Mincho', serif" onmouseover="previewFont('jinja', this.value)" onmouseout="restoreFont('jinja')">ＭＳ 明朝</option>
       </select>
     </div>
     <div class="controls-row">
@@ -266,7 +266,7 @@ button.big-btn:hover { background: #b00000; }
   <div id="previewModal">
     <canvas id="previewCanvas" width="1024" height="1024"></canvas>
   </div>
-  <div id="version">御朱印工房 - SL Edition　Ver.20260108.0353</div>
+  <div id="version">御朱印工房 - SL Edition　Ver.20260108.0405</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -287,6 +287,9 @@ let selectedStampIndex = null;
 let dateFont = 'KouzanBrushFont';
 let hoheiFont = 'KouzanBrushFont';
 let jinjaFont = 'KouzanBrushFont';
+let tempDateFont = dateFont;
+let tempHoheiFont = hoheiFont;
+let tempJinjaFont = jinjaFont;
 let dateX = 72, dateY = 36, dateRotate = 0;
 let hoheiX = 457, hoheiY = 46, hoheiRotate = 0;
 let jinjaX = 258, jinjaY = 50, jinjaRotate = 0;
@@ -367,14 +370,41 @@ function updateAllSliderDisplays() {
   document.getElementById('stampOpacityVal').textContent = document.getElementById('stampOpacity').value + '%';
 }
 
-function updateFontAndDraw(selectElement) {
+function previewFont(type, fontValue) {
+  if (type === 'date') tempDateFont = dateFont, dateFont = fontValue;
+  if (type === 'hohei') tempHoheiFont = hoheiFont, hoheiFont = fontValue;
+  if (type === 'jinja') tempJinjaFont = jinjaFont, jinjaFont = fontValue;
+  waitForFonts(() => drawAll());
+}
+
+function restoreFont(type) {
+  if (type === 'date') dateFont = tempDateFont;
+  if (type === 'hohei') hoheiFont = tempHoheiFont;
+  if (type === 'jinja') jinjaFont = tempJinjaFont;
+  waitForFonts(() => drawAll());
+}
+
+function commitFontChange(selectElement) {
   const id = selectElement.id;
   const value = selectElement.value;
-  if (id === 'dateFont') dateFont = value;
-  if (id === 'hoheiFont') hoheiFont = value;
-  if (id === 'jinjaFont') jinjaFont = value;
+  if (id === 'dateFont') dateFont = value, tempDateFont = value;
+  if (id === 'hoheiFont') hoheiFont = value, tempHoheiFont = value;
+  if (id === 'jinjaFont') jinjaFont = value, tempJinjaFont = value;
   markUnsaved();
   waitForFonts(() => drawAll());
+}
+
+function setCustomFont(type) {
+  const input = document.getElementById(type + 'FontCustom');
+  if (input.value.trim()) {
+    const customFont = input.value.trim();
+    if (type === 'date') dateFont = customFont, tempDateFont = customFont;
+    if (type === 'hohei') hoheiFont = customFont, tempHoheiFont = customFont;
+    if (type === 'jinja') jinjaFont = customFont, tempJinjaFont = customFont;
+    document.getElementById(type + 'Font').value = customFont;
+    markUnsaved();
+    waitForFonts(() => drawAll());
+  }
 }
 
 function drawAll() {
@@ -534,19 +564,6 @@ function updateStampControls() {
   document.getElementById('stampSize').value = s.size;
   document.getElementById('stampRotate').value = s.rotate;
   updateAllSliderDisplays();
-}
-
-function setCustomFont(type) {
-  const input = document.getElementById(type + 'FontCustom');
-  if (input.value.trim()) {
-    const customFont = input.value.trim();
-    if (type === 'date') dateFont = customFont;
-    if (type === 'hohei') hoheiFont = customFont;
-    if (type === 'jinja') jinjaFont = customFont;
-    document.getElementById(type + 'Font').value = customFont;
-    markUnsaved();
-    waitForFonts(() => drawAll());
-  }
 }
 
 const kan = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
@@ -901,6 +918,7 @@ function applySettings(s, fileName = null) {
   document.getElementById('dateEnabled').checked = s.date.enabled ?? true;
   document.getElementById('dateFont').value = s.date.font ?? 'KouzanBrushFont';
   dateFont = s.date.font ?? 'KouzanBrushFont';
+  tempDateFont = dateFont;
   dateX = s.date.x ?? 72;
   dateY = s.date.y ?? 36;
   document.getElementById('dateX').value = dateX; document.getElementById('dateXVal').textContent = dateX;
@@ -916,6 +934,7 @@ function applySettings(s, fileName = null) {
   document.getElementById('hoheiEnabled').checked = s.hohei.enabled ?? true;
   document.getElementById('hoheiFont').value = s.hohei.font ?? 'KouzanBrushFont';
   hoheiFont = s.hohei.font ?? 'KouzanBrushFont';
+  tempHoheiFont = hoheiFont;
   hoheiX = s.hohei.x ?? 457;
   hoheiY = s.hohei.y ?? 46;
   document.getElementById('hoheiX').value = hoheiX; document.getElementById('hoheiXVal').textContent = hoheiX;
@@ -932,6 +951,7 @@ function applySettings(s, fileName = null) {
   document.getElementById('jinjaColor').value = s.jinja.color ?? "#000000";
   document.getElementById('jinjaFont').value = s.jinja.font ?? 'KouzanBrushFont';
   jinjaFont = s.jinja.font ?? 'KouzanBrushFont';
+  tempJinjaFont = jinjaFont;
   jinjaX = s.jinja.x ?? 258;
   jinjaY = s.jinja.y ?? 50;
   document.getElementById('jinjaX').value = jinjaX; document.getElementById('jinjaXVal').textContent = jinjaX;
@@ -1005,6 +1025,9 @@ window.onload = () => {
     if (y === currentYear) opt.selected = true;
     yearSelect.appendChild(opt);
   }
+  tempDateFont = dateFont;
+  tempHoheiFont = hoheiFont;
+  tempJinjaFont = jinjaFont;
   applySettings(defaultSettings);
   updateAllSliderDisplays();
   waitForFonts(() => drawAll());
